@@ -1,0 +1,35 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // File Layout
+    "rootDir": "./src",         // Where TypeScript looks for the code
+    "outDir": "./dist",         // Where compiled JS files go
+
+    // Environment Settings
+    // See also https://aka.ms/tsconfig/module
+    "target": "ES2020",         // Use modern JS features
+    "module": "CommonJS",       // Required for Node.js (uses require/module.exports)
+    "moduleResolution": "node", // Let TS resolve modules like Node.js does
+    
+    // Type Declarations
+    "types": ["node"],          // Include Node.js global types
+    // and npm install -D @types/node
+
+    // Other Outputs
+    "sourceMap": true,          // Generate source maps for JS files (to map back to TS files)
+    "declaration": true,        // Generate `.d.ts` files
+    "declarationMap": true,     // Generate source maps for `.d.ts` files (to map back to TS files)
+
+    // Stricter Typechecking Options
+    "strict": true,                     // Enable all strict type checking options
+    "noUncheckedIndexedAccess": true,   // Add `undefined` to any un-declared field in the type
+    "exactOptionalPropertyTypes": true, // TS applies stricter rules around how it handles properties on type or interfaces which have a ? prefix
+
+    // Compatibility
+    "esModuleInterop": true,                    // Allow default imports from CommonJS
+    "forceConsistentCasingInFileNames": true,   // Ensure that casing is correct in imports
+    "skipLibCheck": true,                       // Skip type checking in `.d.ts` files (faster)
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}

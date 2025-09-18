@@ -1,0 +1,17 @@
+# Dependencies
+/node_modules
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Build output
+/dist
+
+# Prisma generated files and local DBs
+/generated/prisma
+/prisma/dev.db
+/prisma/*.db
+/prisma/migrations
+/prisma/generated
