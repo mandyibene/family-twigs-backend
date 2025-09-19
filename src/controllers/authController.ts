@@ -2,11 +2,12 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { getErrors } from '../utils/getErrors';
+import { JWT } from '../config';
 import { generateAccessToken, generateRefreshToken } from '../utils/generateTokens';
 import { setRefreshToken } from '../utils/setRefreshToken';
+import { getErrors } from '../utils/getErrors';
 import { sendError, unauthorized } from '../utils/sendError';
-import { JWT } from '../config';
+import { sendSuccess } from '../utils/sendSuccess';
 
 const prisma = new PrismaClient();
 
@@ -148,4 +149,14 @@ export const refreshToken = async (req: Request, res: Response) => {
   } catch (err) {
     return unauthorized(res, t.errors.unauthorized);
   }
+};
+
+export const logoutUser = (_req: Request, res: Response) => {
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+
+  return sendSuccess({ res, message: 'Logged out successfully.' });
 };

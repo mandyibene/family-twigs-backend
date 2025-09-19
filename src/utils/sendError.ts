@@ -7,7 +7,7 @@ type ErrorCode =
   | 'INVALID_CREDENTIALS'
   | 'INVALID_INPUT';
 
-interface SendErrorOptions {
+interface SendErrorParams {
   res: Response;
   status?: number; // default: 500
   code: ErrorCode;
@@ -23,7 +23,7 @@ export const sendError = ({
   message,
   context = 'SERVER_ERROR',
   log,
-}: SendErrorOptions) => {
+}: SendErrorParams) => {
   
   if (status >= 500 || log) {
     console.error(`[${context}]`, log || message);
