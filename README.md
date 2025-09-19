@@ -9,7 +9,7 @@ This is the backend API for **Family Twigs**, a multilingual web application tha
 - **Language:** TypeScript
 - **Database:** PostgreSQL (using SQLite temporarily, via Prisma ORM)
 - **Authentication:** JWT with refresh tokens
-- **Validation:** Zod (planned)
+- **Validation:** Zod (v4)
 - **Environment:** Docker (planned)
 - **Localization:** i18next (planned)
 

@@ -24,3 +24,13 @@ export const getRegisterSchema = (locale: 'en' | 'fr') => {
       message: t.password.match,
     });
 }
+
+export const getLoginSchema = (locale: 'en' | 'fr') => {
+  
+  const t = zodErrors[locale];
+
+  return z.object({
+    email: z.email(t.email),
+    password: z.string(), // No need to revalidate complexity
+  });
+};

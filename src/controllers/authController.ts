@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
 import { getErrors } from '../utils/getErrors';
+import { generateAccessToken, generateRefreshToken } from '../utils/generateTokens';
+import { setRefreshToken } from '../utils/setRefreshToken';
+import { sendError, unauthorized } from '../utils/sendError';
+import { JWT } from '../config';
 
 const prisma = new PrismaClient();
-
-const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export const registerUser = async (req: Request, res: Response) => {
 
@@ -21,12 +23,12 @@ export const registerUser = async (req: Request, res: Response) => {
     const existingUser = await prisma.user.findUnique({ where: { email } });
 
     if (existingUser) {
-      return res.status(409).json({
-      error: {
+      return sendError({
+        res,
+        status: 409,
         code: 'USER_ALREADY_EXISTS',
         message: t.errors.userExists,
-      },
-    });
+      });
     }
 
     // Hash password
@@ -40,21 +42,110 @@ export const registerUser = async (req: Request, res: Response) => {
       },
     });
 
-    // Generate JWT
-    const token = jwt.sign({ userId: newUser.id }, JWT_SECRET, {
-      expiresIn: '1h',
-    });
+    // Generate tokens
+    const accessToken = generateAccessToken(newUser.id);
+    const refreshToken = generateRefreshToken(newUser.id);
 
-    // Return token
-    return res.status(201).json({ token });
+    // Set refresh token as an httpOnly cookie
+    setRefreshToken(res, refreshToken);
+
+    // Return access token in response
+    return res.status(201).json({ accessToken  });
+
   } catch (error) {
-    console.error('[REGISTER ERROR]', error);
-    // return res.status(500).json({ error: 'Internal server error.' });
-    return res.status(500).json({
-      error: {
-        code: 'INTERNAL_SERVER_ERROR',
-        message: t.errors.internal,
-      },
+    return sendError({
+      res,
+      code: 'INTERNAL_SERVER_ERROR',
+      message: t.errors.internal,
+      context: '[REGISTER ERROR]',
+      log: error,
     });
+  }
+};
+
+export const loginUser = async (req: Request, res: Response) => {
+  
+  // Data validated by Zod
+  const { email, password } = (req as any).validatedData;
+  
+  // Localized messages for errors
+  const t = getErrors(req.locale);
+
+  try {
+    // Find user by email
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      return sendError({
+        res,
+        status: 401,
+        code: 'INVALID_CREDENTIALS',
+        message: t.errors.invalidCredentials,
+      });
+    }
+
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return sendError({
+        res,
+        status: 401,
+        code: 'INVALID_CREDENTIALS',
+        message: t.errors.invalidCredentials,
+      });
+    }
+
+    // Generate tokens
+    const accessToken = generateAccessToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
+
+    // Set refresh token as an httpOnly cookie
+    setRefreshToken(res, refreshToken);
+
+    // Return access token in response
+    return res.status(200).json({ accessToken });
+
+  } catch (error) {
+    return sendError({
+      res,
+      code: 'INTERNAL_SERVER_ERROR',
+      message: t.errors.internal,
+      context: '[LOGIN ERROR]',
+      log: error,
+    });
+  }
+};
+
+export const refreshToken = async (req: Request, res: Response) => {
+  
+  // Localized messages for errors
+  const t = getErrors(req.locale);
+
+  // Get refresh token from cookies
+  const token = req.cookies?.refreshToken;
+
+  if (!token) {
+    return unauthorized(res, t.errors.unauthorized);
+  }
+
+  try {
+    const payload = jwt.verify(token, JWT.REFRESH_SECRET) as { userId: string };
+
+    // Check if user still exists in DB for security
+    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+
+    if (!user) {
+      return unauthorized(res, t.errors.unauthorized);
+    }
+
+    const newAccessToken = generateAccessToken(payload.userId);
+    const newRefreshToken = generateRefreshToken(payload.userId);
+
+    // Set new refresh token cookie
+    setRefreshToken(res, newRefreshToken);
+
+    return res.json({ accessToken: newAccessToken });
+  } catch (err) {
+    return unauthorized(res, t.errors.unauthorized);
   }
 };

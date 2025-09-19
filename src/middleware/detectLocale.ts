@@ -9,7 +9,7 @@ declare global {
   }
 }
 
-export const detectLocale = (req: Request, res: Response, next: NextFunction) => {
+export const detectLocale = (req: Request, _res: Response, next: NextFunction) => {
   const fromHeader = req.headers['accept-language']?.toString().slice(0, 2);
   const fromCookie = req.cookies?.locale?.slice(0, 2);
 
