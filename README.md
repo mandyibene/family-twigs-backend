@@ -7,7 +7,7 @@ This is the backend API for **Family Twigs**, a multilingual web application tha
 - **Runtime:** Node.js
 - **Framework:** Express.js
 - **Language:** TypeScript
-- **Database:** PostgreSQL (via Prisma ORM)
+- **Database:** PostgreSQL (using SQLite temporarily, via Prisma ORM)
 - **Authentication:** JWT with refresh tokens
 - **Validation:** Zod (planned)
 - **Environment:** Docker (planned)

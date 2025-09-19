@@ -10,7 +10,6 @@
 /dist
 
 # Prisma generated files and local DBs
-/generated/prisma
 /prisma/dev.db
 /prisma/*.db
 /prisma/migrations
