@@ -5,7 +5,8 @@ type ErrorCode =
   | 'UNAUTHORIZED'
   | 'USER_ALREADY_EXISTS'
   | 'INVALID_CREDENTIALS'
-  | 'INVALID_INPUT';
+  | 'INVALID_INPUT'
+  | 'USER_NOT_FOUND';
 
 interface SendErrorParams {
   res: Response;
@@ -21,7 +22,7 @@ export const sendError = ({
   status = 500,
   code,
   message,
-  context = 'SERVER_ERROR',
+  context = '[SERVER ERROR]',
   log,
 }: SendErrorParams) => {
   

@@ -53,13 +53,13 @@ export const registerUser = async (req: Request, res: Response) => {
     // Return access token in response
     return res.status(201).json({ accessToken  });
 
-  } catch (error) {
+  } catch (err) {
     return sendError({
       res,
       code: 'INTERNAL_SERVER_ERROR',
       message: t.errors.internal,
       context: '[REGISTER ERROR]',
-      log: error,
+      log: err,
     });
   }
 };
@@ -106,13 +106,13 @@ export const loginUser = async (req: Request, res: Response) => {
     // Return access token in response
     return res.status(200).json({ accessToken });
 
-  } catch (error) {
+  } catch (err) {
     return sendError({
       res,
       code: 'INTERNAL_SERVER_ERROR',
       message: t.errors.internal,
       context: '[LOGIN ERROR]',
-      log: error,
+      log: err,
     });
   }
 };
@@ -124,7 +124,6 @@ export const refreshToken = async (req: Request, res: Response) => {
 
   // Get refresh token from cookies
   const token = req.cookies?.refreshToken;
-
   if (!token) {
     return unauthorized(res, t.errors.unauthorized);
   }

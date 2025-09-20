@@ -8,6 +8,7 @@ export const errors = {
       userExists: 'User already exists.',
       invalidInput: 'Invalid input.',
       invalidCredentials: 'Invalid email or password.',
+      userNotFound: 'User not found.',
     },
   },
   fr: {
@@ -17,6 +18,7 @@ export const errors = {
       userExists: 'Un utilisateur avec cet email existe déjà.',
       invalidInput: 'Entrée invalide',
       invalidCredentials: 'Email ou mot de passe invalide.',
+      userNotFound: "Utilisateur introuvable.",
     },
   },
 };
