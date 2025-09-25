@@ -12,5 +12,3 @@
 # Prisma generated files and local DBs
 /prisma/dev.db
 /prisma/*.db
-/prisma/migrations
-/prisma/generated

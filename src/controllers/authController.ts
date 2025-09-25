@@ -51,7 +51,7 @@ export const registerUser = async (req: Request, res: Response) => {
     setRefreshToken(res, refreshToken);
 
     // Return access token in response
-    return res.status(201).json({ accessToken  });
+    return res.status(201).json({ accessToken });
 
   } catch (err) {
     return sendError({
