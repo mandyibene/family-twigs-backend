@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --runInBand",
     "dev": "nodemon --watch src --exec ts-node src/index.ts"
   },
   "keywords": [],
