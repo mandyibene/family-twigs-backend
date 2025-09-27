@@ -14,7 +14,7 @@ const prisma = new PrismaClient();
 export const registerUser = async (req: Request, res: Response) => {
 
   // Data validated by Zod
-  const { email, password } = (req as any).validatedData;
+  const { email, password, firstName, lastName } = (req as any).validatedData;
 
   // Localized messages for errors
   const t = getErrors(req.locale);
@@ -40,6 +40,8 @@ export const registerUser = async (req: Request, res: Response) => {
       data: {
         email,
         password: hashedPassword,
+        firstName: firstName,
+        lastName: lastName,
       },
     });
 

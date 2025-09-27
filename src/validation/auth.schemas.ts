@@ -18,6 +18,8 @@ export const getRegisterSchema = (locale: 'en' | 'fr') => {
         .regex(/[0-9]/, t.password.number)
         .regex(/[^A-Za-z0-9]/, t.password.special),
       confirmPassword: z.string(),
+      firstName: z.string(),
+      lastName: z.string()
     })
     .refine((data) => data.password === data.confirmPassword, {
       path: ['confirmPassword'], // Tells Zod which field the error belongs to

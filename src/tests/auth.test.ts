@@ -20,6 +20,8 @@ describe('AUTH API - /register', () => {
   it('should register a new user successfully + return access token + set refresh token cookie', async () => {
     const email = `register${Date.now()}@example.com`; // Unique email
     const password = 'StrongP@ssw0rd!';
+    const firstName = 'Jolyne';
+    const lastName = 'Cujoh';
 
     const res = await request(app)
       .post('/api/auth/register')
@@ -28,6 +30,8 @@ describe('AUTH API - /register', () => {
         email,
         password,
         confirmPassword: password,
+        firstName,
+        lastName,
       });
     
     expect(res.statusCode).toBe(201); // Checks that the response is HTTP 201 Created
@@ -46,6 +50,8 @@ describe('AUTH API - /register', () => {
   it('should reject duplicate email', async () => {
     const email = `duplicate${Date.now()}@example.com`;
     const password = 'StrongP@ssw0rd!';
+    const firstName = 'Jolyne';
+    const lastName = 'Cujoh';
 
     // Register once
     await request(app)
@@ -55,6 +61,8 @@ describe('AUTH API - /register', () => {
         email,
         password,
         confirmPassword: password,
+        firstName,
+        lastName,
       });
 
     // Try registering again
@@ -65,6 +73,8 @@ describe('AUTH API - /register', () => {
         email,
         password,
         confirmPassword: password,
+        firstName,
+        lastName,
       });
 
     expect(res.statusCode).toBe(409);
@@ -72,13 +82,20 @@ describe('AUTH API - /register', () => {
   });
 
   it('should reject weak password', async () => {
+    const email = `invalid${Date.now()}@example.com`;
+    const password = 'weak';
+    const firstName = 'Jolyne';
+    const lastName = 'Cujoh';
+
     const res = await request(app)
       .post('/api/auth/register')
       .set('Accept-Language', 'en')
       .send({
-        email: 'invalid@example.com',
-        password: 'weak',
-        confirmPassword: 'weak',
+        email,
+        password,
+        confirmPassword: password,
+        firstName,
+        lastName,
       });
 
     expect(res.statusCode).toBe(400);
@@ -87,13 +104,20 @@ describe('AUTH API - /register', () => {
   });
 
   it('should reject mismatched confirmPassword', async () => {
+    const email = `mismatch${Date.now()}@example.com`;
+    const password = 'StrongP@ssw0rd!';
+    const firstName = 'Jolyne';
+    const lastName = 'Cujoh';
+
     const res = await request(app)
       .post('/api/auth/register')
       .set('Accept-Language', 'en')
       .send({
-        email: 'mismatch@example.com',
-        password: 'StrongP@ssw0rd!',
+        email,
+        password,
         confirmPassword: 'WrongP@ssw0rd!',
+        firstName,
+        lastName,
       });
 
     expect(res.statusCode).toBe(400);
@@ -105,6 +129,8 @@ describe('AUTH API - /login', () => {
   const testUser = {
     email: `login${Date.now()}@example.com`,
     password: 'StrongP@ssw0rd!',
+    firstName: `Jolyne`,
+    lastName: `Cujoh`,
   };
 
   beforeAll(async () => {
@@ -116,6 +142,8 @@ describe('AUTH API - /login', () => {
       .send({
         email: testUser.email,
         password: testUser.password,
+        firstName: testUser.firstName,
+        lastName: testUser.lastName,
         confirmPassword: testUser.password,
       });
   });

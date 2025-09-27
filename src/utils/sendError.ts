@@ -6,7 +6,9 @@ type ErrorCode =
   | 'USER_ALREADY_EXISTS'
   | 'INVALID_CREDENTIALS'
   | 'INVALID_INPUT'
-  | 'USER_NOT_FOUND';
+  | 'INVALID_ID'
+  | 'USER_NOT_FOUND'
+  | 'TREE_NOT_FOUND';
 
 interface SendErrorParams {
   res: Response;

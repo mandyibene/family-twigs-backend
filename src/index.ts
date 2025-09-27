@@ -3,8 +3,9 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { detectLocale } from './middleware/detectLocale';
-import authRoutes from './routes/auth';
-import userRoutes from './routes/user';
+import authRoutes from './routes/auth.routes';
+import userRoutes from './routes/user.routes';
+import familyTreeRoutes from './routes/familyTree.routes';
 import { ENV } from './config';
 import helmet from 'helmet';
 
@@ -47,7 +48,8 @@ app.get('/', (req, res) => {
   res.send('Family Twigs API is running ✅');
 });
 app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/trees', familyTreeRoutes);
 
 if (ENV.NODE_ENV !== 'test') {
   startServer();

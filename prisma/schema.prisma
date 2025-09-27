@@ -13,9 +13,106 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============== USERS ==============
+
+enum AppRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  id              String    @id @default(uuid())
+  email           String    @unique
+  password        String
+  firstName       String
+  lastName        String
+  pseudo          String?   @unique
+  lang            String    @default("en")
+  provider        String    @default("CREDENTIALS")
+  avatarUrl       String?
+  role            AppRole   @default(USER)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  treeMemberships TreeMembership[]
+  linkedPersons   Person[]
+  
+  ownedTrees FamilyTree[]   @relation("OwnedTrees")
+}
+
+
+// ============== TREES ==============
+
+enum TreeRole {
+  READER
+  EDITOR
+  MANAGER
+}
+
+model FamilyTree {
+  id        String          @id @default(uuid())
+  name      String
+  ownerId   String
+  createdAt DateTime        @default(now())
+  members   TreeMembership[]
+  people    Person[]
+
+  owner     User            @relation("OwnedTrees", fields: [ownerId], references: [id])
+}
+
+model TreeMembership {
+  id        String      @id @default(uuid())
+  userId    String
+  treeId    String
+  role      TreeRole
+  createdAt DateTime    @default(now())
+
+  user      User        @relation(fields: [userId], references: [id])
+  tree      FamilyTree  @relation(fields: [treeId], references: [id])
+
+  @@unique([userId, treeId]) // One role per user per tree
+}
+
+
+// ============== PEOPLE ==============
+
+enum RelationshipType {
+  PARENT
+  SPOUSE
+  PARTNER
+  SIBLING
+  OTHER
+}
+
+model Person {
+  id        String      @id @default(uuid())
+  fullName  String
+  birthDate DateTime?
+  deathDate DateTime?
+  gender    String?
+  userId    String?
+  treeId    String
+  photoUrl  String?
+
+  tree      FamilyTree  @relation(fields: [treeId], references: [id])
+  user      User?       @relation(fields: [userId], references: [id])
+
+  relationshipsFrom Relationship[] @relation("FromPerson")
+  relationshipsTo   Relationship[] @relation("ToPerson")
+
+  @@unique([userId, treeId]) // One person per user per tree
+}
+
+model Relationship {
+  id           String           @id @default(uuid())
+  fromId       String
+  toId         String
+  type         RelationshipType
+  meta         Json?
+  createdAt    DateTime         @default(now())
+
+  from         Person           @relation("FromPerson", fields: [fromId], references: [id])
+  to           Person           @relation("ToPerson", fields: [toId], references: [id])
+
+  @@unique([fromId, toId, type]) // Prevent duplicated relationships
 }

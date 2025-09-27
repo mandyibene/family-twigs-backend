@@ -9,6 +9,7 @@ export const errors = {
       invalidInput: 'Invalid input.',
       invalidCredentials: 'Invalid email or password.',
       userNotFound: 'User not found.',
+      treeNotFound: 'Tree not found.',
     },
   },
   fr: {
@@ -19,6 +20,7 @@ export const errors = {
       invalidInput: 'Entrée invalide',
       invalidCredentials: 'Email ou mot de passe invalide.',
       userNotFound: "Utilisateur introuvable.",
+      treeNotFound: "Arbre introuvable.",
     },
   },
 };

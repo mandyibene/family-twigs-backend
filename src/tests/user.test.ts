@@ -20,18 +20,26 @@ describe('USER API - /me', () => {
 
     const email = `me${Date.now()}@example.com`;
     const password = 'StrongP@ssw0rd!';
+    const firstName = 'Jotaro';
+    const lastName = 'Kujo';
 
     // Register the user
     const registerRes = await request(app)
       .post('/api/auth/register')
-      .send({ email, password, confirmPassword: password });
+      .send({
+        email,
+        password,
+        confirmPassword: password,
+        firstName,
+        lastName
+      });
 
     accessToken = registerRes.body.accessToken;
   });
 
   it('should return user info when authenticated', async () => {
     const res = await request(app)
-      .get('/api/user/me')
+      .get('/api/users/me')
       .set('Authorization', `Bearer ${accessToken}`);
     expect(res.statusCode).toBe(200);
     expect(res.body.user.email).toBeDefined();
@@ -39,13 +47,13 @@ describe('USER API - /me', () => {
   });
 
   it('should return 401 if no token is provided', async () => {
-    const res = await request(app).get('/api/user/me');
+    const res = await request(app).get('/api/users/me');
     expect(res.statusCode).toBe(401);
   });
 
   it('should return 401 if token is invalid', async () => {
     const res = await request(app)
-      .get('/api/user/me')
+      .get('/api/users/me')
       .set('Authorization', 'Bearer invalid.token');
     expect(res.statusCode).toBe(401);
   });

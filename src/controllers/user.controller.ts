@@ -9,9 +9,7 @@ export const getCurrentUser = async (req: Request, res: Response) => {
   const t = getErrors(req.locale);
   const userId = (req as any).userId;
 
-  if (!userId) {
-    return unauthorized(res, t.errors.unauthorized);
-  }
+  if (!userId) return unauthorized(res, t.errors.unauthorized);
 
   try {
     const user = await prisma.user.findUnique({
