@@ -1,6 +1,7 @@
 import { z, ZodType } from 'zod';
 import { Request, Response, NextFunction } from 'express';
-import { getErrors } from '../utils/getErrors';
+import { getMessages } from '../utils/getMessages';
+import { cleanInputFields } from '../utils/string';
 
 export const validateRequest = <T>(
   getSchema: (locale: 'en' | 'fr') => ZodType<T>
@@ -9,10 +10,10 @@ export const validateRequest = <T>(
     // Request extended with locale field in detectLocale middleware
     const schema = getSchema(req.locale || 'en');
 
-    const result = schema.safeParse(req.body);
+    const cleanBody = cleanInputFields(req.body);
+    const result = schema.safeParse(cleanBody);
 
-    // Localized messages for errors
-    const t = getErrors(req.locale);
+    const t = getMessages(req.locale); // Localized messages
 
     if (!result.success) {
       const details = z.treeifyError(result.error);

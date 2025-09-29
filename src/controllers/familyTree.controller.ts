@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import { getErrors } from '../utils/getErrors';
+import { getMessages } from '../utils/getMessages';
 import { sendError, unauthorized } from '../utils/sendError';
 
 const prisma = new PrismaClient();
 
 export const createFamilyTree = async (req: Request, res: Response) => {
-  const t = getErrors(req.locale);
+  const t = getMessages(req.locale); // Localized messages
   const userId = (req as any).userId;
   const { name } = (req as any).validatedData;
 
@@ -37,7 +37,7 @@ export const createFamilyTree = async (req: Request, res: Response) => {
 };
 
 export const getUserTrees = async (req: Request, res: Response) => {
-  const t = getErrors(req.locale);
+  const t = getMessages(req.locale); // Localized messages
   const userId = (req as any).userId;
 
   if (!userId) return unauthorized(res, t.errors.unauthorized);
@@ -67,7 +67,7 @@ export const getUserTrees = async (req: Request, res: Response) => {
 };
 
 export const getOwnedTrees = async (req: Request, res: Response) => {
-  const t = getErrors(req.locale);
+  const t = getMessages(req.locale); // Localized messages
   const userId = (req as any).userId;
 
   if (!userId) return unauthorized(res, t.errors.unauthorized);
@@ -97,7 +97,7 @@ export const getOwnedTrees = async (req: Request, res: Response) => {
 };
 
 export const getTreeById = async (req: Request, res: Response) => {
-  const t = getErrors(req.locale);
+  const t = getMessages(req.locale); // Localized messages
   const userId = (req as any).userId;
   const { id } = req.params;
 

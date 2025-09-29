@@ -22,7 +22,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use(cookieParser());
-app.use(detectLocale); // Always after cookieParser
+app.use(detectLocale); // Always put after cookieParser, extends req with `locale`
 
 app.use(helmet()); // Default protections
 app.use(
@@ -44,7 +44,7 @@ app.use(
 );
 
 // Mount routes
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.send('Family Twigs API is running ✅');
 });
 app.use('/api/auth', authRoutes);

@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import { JWT } from '../config';
 import { generateAccessToken, generateRefreshToken } from '../utils/generateTokens';
 import { setRefreshToken } from '../utils/setRefreshToken';
-import { getErrors } from '../utils/getErrors';
+import { getMessages } from '../utils/getMessages';
 import { sendError, unauthorized } from '../utils/sendError';
 import { sendSuccess } from '../utils/sendSuccess';
 
@@ -16,8 +16,7 @@ export const registerUser = async (req: Request, res: Response) => {
   // Data validated by Zod
   const { email, password, firstName, lastName } = (req as any).validatedData;
 
-  // Localized messages for errors
-  const t = getErrors(req.locale);
+  const t = getMessages(req.locale); // Localized messages
 
   try {
     // Check if user already exists
@@ -71,22 +70,20 @@ export const loginUser = async (req: Request, res: Response) => {
   // Data validated by Zod
   const { email, password } = (req as any).validatedData;
   
-  // Localized messages for errors
-  const t = getErrors(req.locale);
+  const t = getMessages(req.locale); // Localized messages
 
   try {
     // Find user by email
     const user = await prisma.user.findUnique({ where: { email } });
-
     if (!user) {
       return sendError({
         res,
         status: 401,
         code: 'INVALID_CREDENTIALS',
         message: t.errors.invalidCredentials,
+        context: '[LOGIN ERROR]',
       });
     }
-
     // Compare passwords
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -95,9 +92,9 @@ export const loginUser = async (req: Request, res: Response) => {
         status: 401,
         code: 'INVALID_CREDENTIALS',
         message: t.errors.invalidCredentials,
+        context: '[LOGIN ERROR]',
       });
     }
-
     // Generate tokens
     const accessToken = generateAccessToken(user.id);
     const refreshToken = generateRefreshToken(user.id);
@@ -120,9 +117,7 @@ export const loginUser = async (req: Request, res: Response) => {
 };
 
 export const refreshToken = async (req: Request, res: Response) => {
-  
-  // Localized messages for errors
-  const t = getErrors(req.locale);
+  const t = getMessages(req.locale); // Localized messages
 
   // Get refresh token from cookies
   const token = req.cookies?.refreshToken;
@@ -152,12 +147,14 @@ export const refreshToken = async (req: Request, res: Response) => {
   }
 };
 
-export const logoutUser = (_req: Request, res: Response) => {
+export const logoutUser = (req: Request, res: Response) => {
+  const t = getMessages(req.locale); // Localized messages
+
   res.clearCookie('refreshToken', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
   });
 
-  return sendSuccess({ res, message: 'Logged out successfully.' });
+  return sendSuccess({ res, message: t.successes.logout });
 };

@@ -7,15 +7,17 @@ type ErrorCode =
   | 'INVALID_CREDENTIALS'
   | 'INVALID_INPUT'
   | 'INVALID_ID'
+  | 'INCORRECT_PASSWORD'
   | 'USER_NOT_FOUND'
+  | 'PSEUDO_TAKEN'
   | 'TREE_NOT_FOUND';
 
 interface SendErrorParams {
   res: Response;
-  status?: number; // default: 500
+  status?: number; // Default: 500
   code: ErrorCode;
   message: string;
-  context?: string;
+  context?: string; // Default: '[SERVER ERROR]'
   log?: unknown;
 }
 
