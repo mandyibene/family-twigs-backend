@@ -6,6 +6,11 @@ const prisma = new PrismaClient();
 
 
 export const resetDatabase = async () => {
+  await prisma.relationship.deleteMany();   // Depends on Person
+  await prisma.person.deleteMany();         // Depends on FamilyTree, User
+  await prisma.treeMembership.deleteMany(); // Depends on FamilyTree, User
+  await prisma.familyTree.deleteMany();     // Depends on User
+  await prisma.session.deleteMany();        // Depends on User
   await prisma.user.deleteMany();
 };
 
