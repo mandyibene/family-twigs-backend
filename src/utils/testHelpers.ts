@@ -44,7 +44,7 @@ export const registerAndGetToken = async (user: {
 }) => {
   const res = await registerUser(user);
 
-  return res.body.accessToken;
+  return res.body.data.accessToken;
 };
 
 export const loginUser = async (email: string, password: string) => {

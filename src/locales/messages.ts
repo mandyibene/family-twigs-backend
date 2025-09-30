@@ -18,8 +18,14 @@ export const messages = {
       tooManyUpdatePassword: 'Too many password updating attempts. Please try again later.',
     },
     successes: {
+      register: 'User registered successfully',
+      login: 'User logged in successfully',
       logout: 'Logged out successfully',
-      passwordUpdated: 'Password has been updated successfully'
+      userFetched: 'User profile loaded successfully',
+      userUpdated: 'User profile updated successfully',
+      passwordUpdated: 'Password has been updated successfully',
+      refresh: 'Refreshed tokens successfully',
+      sessionsFetched: 'Sessions fetched successfully'
     },
   },
   fr: {
@@ -39,8 +45,14 @@ export const messages = {
       tooManyUpdatePassword: 'Trop de tentatives de mise à jour du mot de passe. Réessayez plus tard.',
     },
     successes: {
+      register: 'Inscription réussie.',
+      login: 'Connexion réussie.',
       logout: 'Déconnexion réussie.',
-      passwordUpdated: 'Le mot de passe a été mis à jour.'
+      userFetched: 'Profil utilisateur récupéré avec succès.',
+      userUpdated: 'Profil utilisateur mis à jour avec succès.',
+      passwordUpdated: 'Le mot de passe a été mis à jour.',
+      refresh: 'Les tokens ont été mis à jour avec succès.',
+      sessionsFetched: 'Sessions récupérées avec succès.'
     },
   },
 };

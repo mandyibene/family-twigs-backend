@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { JWT } from '../config';
 import { getMessages } from '../utils/getMessages';
-import { unauthorized } from '../utils/sendError';
+import { unauthorized } from '../utils/httpResponse';
 import { verifyJwt } from '../utils/verifyJwt';
 
 export interface AuthenticatedRequest extends Request {

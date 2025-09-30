@@ -6,8 +6,7 @@ import { JWT } from '../config';
 import { generateAccessToken, generateRefreshToken } from '../utils/generateTokens';
 import { setRefreshToken } from '../utils/setRefreshToken';
 import { getMessages } from '../utils/getMessages';
-import { sendError, unauthorized } from '../utils/sendError';
-import { sendSuccess } from '../utils/sendSuccess';
+import { sendError, sendSuccess, unauthorized } from '../utils/httpResponse';
 import { createSession } from '../utils/session';
 
 const prisma = new PrismaClient();
@@ -28,6 +27,7 @@ export const registerUser = async (req: Request, res: Response) => {
         res,
         status: 409,
         code: 'USER_ALREADY_EXISTS',
+        context: 'REGISTER ERROR',
         message: t.errors.userExists,
       });
     }
@@ -56,14 +56,14 @@ export const registerUser = async (req: Request, res: Response) => {
     setRefreshToken(res, refreshToken);
 
     // Return access token in response
-    return res.status(201).json({ accessToken });
+    // return res.status(201).json({ accessToken });
+    return sendSuccess({ res, status: 201, message: t.successes.register, data: { accessToken } });
 
   } catch (err) {
     return sendError({
       res,
-      code: 'INTERNAL_SERVER_ERROR',
+      context: 'REGISTER ERROR',
       message: t.errors.internal,
-      context: '[REGISTER ERROR]',
       log: err,
     });
   }
@@ -84,8 +84,8 @@ export const loginUser = async (req: Request, res: Response) => {
         res,
         status: 401,
         code: 'INVALID_CREDENTIALS',
+        context: 'LOGIN ERROR',
         message: t.errors.invalidCredentials,
-        context: '[LOGIN ERROR]',
       });
     }
     // Compare passwords
@@ -95,8 +95,8 @@ export const loginUser = async (req: Request, res: Response) => {
         res,
         status: 401,
         code: 'INVALID_CREDENTIALS',
+        context: 'LOGIN ERROR',
         message: t.errors.invalidCredentials,
-        context: '[LOGIN ERROR]',
       });
     }
     // Generate tokens
@@ -110,14 +110,14 @@ export const loginUser = async (req: Request, res: Response) => {
     setRefreshToken(res, refreshToken);
 
     // Return access token in response
-    return res.status(200).json({ accessToken });
+    // return res.status(200).json({ accessToken });
+    return sendSuccess({ res, message: t.successes.login, data: { accessToken } });
 
   } catch (err) {
     return sendError({
       res,
-      code: 'INTERNAL_SERVER_ERROR',
+      context: 'LOGIN ERROR',
       message: t.errors.internal,
-      context: '[LOGIN ERROR]',
       log: err,
     });
   }
@@ -161,7 +161,8 @@ export const refreshToken = async (req: Request, res: Response) => {
     // Set new refresh token cookie
     setRefreshToken(res, newRefreshToken);
 
-    return res.json({ accessToken: newAccessToken });
+    // return res.json({ accessToken: newAccessToken });
+    return sendSuccess({ res, message: t.successes.refresh, data: { accessToken: newAccessToken } });
   } catch (err) {
     return unauthorized(res, t.errors.unauthorized);
   }
@@ -183,8 +184,8 @@ export const logoutUser = async (req: Request, res: Response) => {
       return sendError({
         res,
         code: 'INTERNAL_SERVER_ERROR',
+        context: 'LOGOUT ERROR',
         message: t.errors.internal,
-        context: '[LOGOUT ERROR]',
         log: err,
       });
     }
@@ -238,8 +239,8 @@ export const logoutAllSessions = async (req: Request, res: Response) => {
     return sendError({
       res,
       code: 'INTERNAL_SERVER_ERROR',
+      context: 'LOGOUT ALL SESSIONS ERROR',
       message: t.errors.internal,
-      context: '[LOGOUT_ALL_SESSIONS ERROR]',
       log: err,
     });
   }

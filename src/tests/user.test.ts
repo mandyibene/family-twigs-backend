@@ -29,8 +29,8 @@ describe('GET /api/users/me', () => {
   it('should return user info when authenticated', async () => {
     const res = await getMe(accessToken);
     expect(res.statusCode).toBe(200);
-    expect(res.body.user.email).toBeDefined();
-    expect(res.body.user.email).toMatch(/@example.com/);
+    expect(res.body.data.user.email).toBeDefined();
+    expect(res.body.data.user.email).toMatch(/@example.com/);
   });
 
   it('should return 401 if no token is provided', async () => {
@@ -69,7 +69,7 @@ describe('PUT /api/users/me', () => {
     expect(res.status).toBe(200);
     for (const key in updatedInfo) {
       const typedKey = key as keyof typeof updatedInfo;
-      expect(res.body.user[key]).toBe(updatedInfo[typedKey]);
+      expect(res.body.data.user[key]).toBe(updatedInfo[typedKey]);
     }
   });
 });

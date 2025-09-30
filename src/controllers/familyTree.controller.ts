@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { getMessages } from '../utils/getMessages';
-import { sendError, unauthorized } from '../utils/sendError';
+import { sendError, unauthorized } from '../utils/httpResponse';
 
 const prisma = new PrismaClient();
 

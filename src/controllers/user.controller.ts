@@ -2,15 +2,14 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { getMessages } from '../utils/getMessages';
-import { sendError, unauthorized } from '../utils/sendError';
-import { sendSuccess } from '../utils/sendSuccess';
+import { sendError, sendSuccess, unauthorized } from '../utils/httpResponse';
 
 const prisma = new PrismaClient();
 
 export const getCurrentUser = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
+  
   const userId = (req as any).userId;
-
   if (!userId) return unauthorized(res, t.errors.unauthorized);
 
   try {
@@ -29,17 +28,17 @@ export const getCurrentUser = async (req: Request, res: Response) => {
       status: 404,
       code: 'USER_NOT_FOUND',
       message: t.errors.userNotFound,
-      context: '[GET USER ERROR]',
+      context: 'GET USER ERROR',
     });
     }
 
-    return res.status(200).json({ user });
+    return sendSuccess({ res, message: t.successes.userFetched, data: { user } });
   } catch (err) {
     return sendError({
       res,
       code: 'INTERNAL_SERVER_ERROR',
       message: t.errors.internal,
-      context: '[GET USER ERROR]',
+      context: 'GET USER ERROR',
       log: err,
     });
   }
@@ -47,8 +46,8 @@ export const getCurrentUser = async (req: Request, res: Response) => {
 
 export const updateUserProfile = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
+  
   const userId = (req as any).userId;
-
   if (!userId) return unauthorized(res, t.errors.unauthorized);
 
   const data = (req as any).validatedData;
@@ -69,7 +68,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
           status: 409,
           code: 'PSEUDO_TAKEN',
           message: t.errors.pseudoTaken,
-          context: '[UPDATE PROFILE ERROR]',
+          context: 'UPDATE PROFILE ERROR',
         });
       }
     }
@@ -89,13 +88,13 @@ export const updateUserProfile = async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(200).json({ user: updatedUser });
+    return sendSuccess({ res, message: t.successes.userFetched, data: { user: updatedUser } });
   } catch (err) {
     return sendError({
       res,
       code: 'INTERNAL_SERVER_ERROR',
       message: t.errors.internal,
-      context: '[UPDATE PROFILE ERROR]',
+      context: 'UPDATE PROFILE ERROR',
       log: err,
     });
   }
@@ -146,6 +145,51 @@ export const updatePassword = async (req: Request, res: Response) => {
     return sendError({
       res,
       code: 'INTERNAL_SERVER_ERROR',
+      message: t.errors.internal,
+      log: err,
+    });
+  }
+};
+
+export const getUserSessions = async (req: Request, res: Response) => {
+  const t = getMessages(req.locale);
+  
+  const userId = (req as any).userId;
+  if (!userId) return unauthorized(res, t.errors.unauthorized);
+
+  try {
+    const sessions = await prisma.session.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        refreshToken: true,
+        userAgent: true,
+        ip: true,
+        createdAt: true,
+        expiresAt: true,
+        updatedAt: true,
+      },
+    });
+    
+    // Mark current session
+    const currentRefreshToken = req.cookies?.refreshToken;
+    const sessionsWithCurrentBoolean = sessions.map(session => {
+      // Separate refreshToken from other properties, we don't need it in the response
+      let {refreshToken, ...s} = session;
+      // Add boolean isCurrent
+      return {
+        ...s,
+        isCurrent: currentRefreshToken === session.refreshToken
+      }
+    })
+
+    return sendSuccess({ res, message: t.successes.sessionsFetched, data: { sessionsWithCurrentBoolean } });
+  } catch (err) {
+    return sendError({
+      res,
+      code: 'INTERNAL_SERVER_ERROR',
+      context: 'GET SESSIONS ERROR',
       message: t.errors.internal,
       log: err,
     });

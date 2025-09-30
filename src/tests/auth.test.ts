@@ -24,7 +24,7 @@ describe('POST /api/auth/register', () => {
     const res = await registerUser(user);
     
     expect(res.statusCode).toBe(201); // Checks that the response is HTTP 201 Created
-    expect(res.body.accessToken).toBeDefined(); // Checks that an access token is returned
+    expect(res.body.data.accessToken).toBeDefined(); // Checks that an access token is returned
 
     const refreshCookie = getRefreshToken(res);
     expect(refreshCookie).toBeDefined(); // Checks that a refresh token is in cookies
@@ -74,7 +74,7 @@ describe('POST /api/auth/login', () => {
     const res = await loginUser(user.email, user.password);
 
     expect(res.statusCode).toBe(200);
-    expect(res.body.accessToken).toBeDefined();
+    expect(res.body.data.accessToken).toBeDefined();
 
     const refreshCookie = getRefreshToken(res);
     expect(refreshCookie).toBeDefined();
