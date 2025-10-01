@@ -7,6 +7,7 @@ import { Response } from 'express';
 type ErrorCode =
   | 'INTERNAL_SERVER_ERROR'
   | 'UNAUTHORIZED'
+  | 'BAD_REQUEST'
   | 'USER_ALREADY_EXISTS'
   | 'INVALID_CREDENTIALS'
   | 'INVALID_INPUT'
@@ -65,6 +66,9 @@ export const sendError = ({
 
 export const unauthorized = (res: Response, message: string) =>
   sendError({ res, status: 401, code: 'UNAUTHORIZED', message });
+
+export const badRequest = (res: Response, message: string) =>
+  sendError({ res, status: 400, code: 'BAD_REQUEST', message });
 
 
 // ========================================

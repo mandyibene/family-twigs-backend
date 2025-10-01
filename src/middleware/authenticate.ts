@@ -4,10 +4,6 @@ import { getMessages } from '../utils/getMessages';
 import { unauthorized } from '../utils/httpResponse';
 import { verifyJwt } from '../utils/verifyJwt';
 
-export interface AuthenticatedRequest extends Request {
-  userId?: string;
-}
-
 /**
  * Middleware to authenticate requests using a JWT access token.
  *
@@ -22,7 +18,7 @@ export interface AuthenticatedRequest extends Request {
  *
  * @returns 401 response if authentication fails, otherwise calls `next()`.
  */
-export const authenticate = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const authenticate = (req: Request, res: Response, next: NextFunction) => {
   const t = getMessages(req.locale); // Localized messages
   const authHeader = req.headers.authorization; // Extract Bearer <token> from headers
   

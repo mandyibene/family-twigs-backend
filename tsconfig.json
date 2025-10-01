@@ -2,7 +2,8 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
-    "rootDir": "./src",         // Where TypeScript looks for the code
+    // "rootDir": "./src",         // Where TypeScript looks for the code
+    "rootDirs": ["src", "tasks"],
     "outDir": "./dist",         // Where compiled JS files go
 
     // Environment Settings
@@ -30,6 +31,6 @@
     "forceConsistentCasingInFileNames": true,   // Ensure that casing is correct in imports
     "skipLibCheck": true,                       // Skip type checking in `.d.ts` files (faster)
   },
-  "include": ["src", "src/tests"],
+  "include": ["src", "src/types", "src/tests"],
   "exclude": ["node_modules", "src/tests"]
 }

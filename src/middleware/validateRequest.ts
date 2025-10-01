@@ -28,7 +28,7 @@ export const validateRequest = <T>(
     }
 
     // Store parsed data on request (to avoid re-validating)
-    (req as any).validatedData = result.data;
+    req.validatedData = result.data;
     next();
   };
 };

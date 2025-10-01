@@ -1,14 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 
-// Extend Request type to include the `locale` field
-declare global {
-  namespace Express {
-    interface Request {
-      locale?: 'en' | 'fr';
-    }
-  }
-}
-
 /**
  * Middleware to detect and set the user's locale (language preference), used for responses.
  *

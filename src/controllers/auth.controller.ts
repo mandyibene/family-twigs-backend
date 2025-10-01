@@ -8,13 +8,14 @@ import { setRefreshToken } from '../utils/setRefreshToken';
 import { getMessages } from '../utils/getMessages';
 import { sendError, sendSuccess, unauthorized } from '../utils/httpResponse';
 import { createSession } from '../utils/session';
+import { LoginUserInput, RegisterUserInput } from '../types/auth.types';
 
 const prisma = new PrismaClient();
 
 export const registerUser = async (req: Request, res: Response) => {
 
   // Data validated by Zod
-  const { email, password, firstName, lastName } = (req as any).validatedData;
+  const { email, password, firstName, lastName } = req.validatedData as RegisterUserInput;
 
   const t = getMessages(req.locale); // Localized messages
 
@@ -72,7 +73,7 @@ export const registerUser = async (req: Request, res: Response) => {
 export const loginUser = async (req: Request, res: Response) => {
   
   // Data validated by Zod
-  const { email, password } = (req as any).validatedData;
+  const { email, password } = req.validatedData as LoginUserInput;
   
   const t = getMessages(req.locale); // Localized messages
 

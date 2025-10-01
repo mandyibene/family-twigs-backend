@@ -8,6 +8,7 @@ import userRoutes from './routes/user.routes';
 import familyTreeRoutes from './routes/familyTree.routes';
 import { ENV } from './config';
 import helmet from 'helmet';
+import { cleanSessions } from '../tasks/cleanSessions'
 
 dotenv.config();
 
@@ -59,6 +60,7 @@ function startServer() {
   app.listen(ENV.PORT, () => {
     console.log(`🚀 Server ready at http://localhost:${ENV.PORT}`);
   });
+  // cleanSessions(); // Cron job
 }
 
 export default app; // Export required for Supertest

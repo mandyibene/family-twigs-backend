@@ -2,13 +2,14 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { getMessages } from '../utils/getMessages';
 import { sendError, unauthorized } from '../utils/httpResponse';
+import { FamilyTreeInput } from '../types/familyTree.types';
 
 const prisma = new PrismaClient();
 
 export const createFamilyTree = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
-  const userId = (req as any).userId;
-  const { name } = (req as any).validatedData;
+  const userId = req.userId;
+  const { name } = req.validatedData as FamilyTreeInput;
 
   if (!userId) return unauthorized(res, t.errors.unauthorized);
 
@@ -38,7 +39,7 @@ export const createFamilyTree = async (req: Request, res: Response) => {
 
 export const getUserTrees = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
-  const userId = (req as any).userId;
+  const userId = req.userId;
 
   if (!userId) return unauthorized(res, t.errors.unauthorized);
 
@@ -68,7 +69,7 @@ export const getUserTrees = async (req: Request, res: Response) => {
 
 export const getOwnedTrees = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
-  const userId = (req as any).userId;
+  const userId = req.userId;
 
   if (!userId) return unauthorized(res, t.errors.unauthorized);
 
@@ -98,7 +99,7 @@ export const getOwnedTrees = async (req: Request, res: Response) => {
 
 export const getTreeById = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
-  const userId = (req as any).userId;
+  const userId = req.userId;
   const { id } = req.params;
 
   if (!userId) return unauthorized(res, t.errors.unauthorized);

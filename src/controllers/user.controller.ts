@@ -2,14 +2,15 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { getMessages } from '../utils/getMessages';
-import { sendError, sendSuccess, unauthorized } from '../utils/httpResponse';
+import { badRequest, sendError, sendSuccess, unauthorized } from '../utils/httpResponse';
+import { UpdatePasswordInput, UpdateUserProfileInput } from '../types/user.types';
 
 const prisma = new PrismaClient();
 
 export const getCurrentUser = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
   
-  const userId = (req as any).userId;
+  const userId = req.userId;
   if (!userId) return unauthorized(res, t.errors.unauthorized);
 
   try {
@@ -47,10 +48,10 @@ export const getCurrentUser = async (req: Request, res: Response) => {
 export const updateUserProfile = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
   
-  const userId = (req as any).userId;
+  const userId = req.userId;
   if (!userId) return unauthorized(res, t.errors.unauthorized);
 
-  const data = (req as any).validatedData;
+  const data = req.validatedData as UpdateUserProfileInput;
 
   try {
     // Check if pseudo is taken
@@ -103,11 +104,11 @@ export const updateUserProfile = async (req: Request, res: Response) => {
 export const updatePassword = async (req: Request, res: Response) => {
 
   // Data validated by Zod
-  const { currentPassword, newPassword } = (req as any).validatedData;
+  const { currentPassword, newPassword } = req.validatedData as UpdatePasswordInput;
 
   const t = getMessages(req.locale); // Localized messages
 
-  const userId = (req as any).userId;
+  const userId = req.userId;
   if (!userId) return unauthorized(res, t.errors.unauthorized);
 
   try {
@@ -154,7 +155,7 @@ export const updatePassword = async (req: Request, res: Response) => {
 export const getUserSessions = async (req: Request, res: Response) => {
   const t = getMessages(req.locale);
   
-  const userId = (req as any).userId;
+  const userId = req.userId;
   if (!userId) return unauthorized(res, t.errors.unauthorized);
 
   try {
@@ -185,6 +186,30 @@ export const getUserSessions = async (req: Request, res: Response) => {
     })
 
     return sendSuccess({ res, message: t.successes.sessionsFetched, data: { sessionsWithCurrentBoolean } });
+  } catch (err) {
+    return sendError({
+      res,
+      code: 'INTERNAL_SERVER_ERROR',
+      context: 'GET SESSIONS ERROR',
+      message: t.errors.internal,
+      log: err,
+    });
+  }
+};
+
+export const deleteUserSession = async (req: Request, res: Response) => {
+  const t = getMessages(req.locale);
+  
+  const userId = req.userId;
+  if (!userId) return unauthorized(res, t.errors.unauthorized);
+
+  const sessionId = req.params.sessionId;
+  if (!sessionId) return badRequest(res, t.errors.noSessionId);
+
+  try {
+    await prisma.session.delete({ where: { id: sessionId } });
+
+    return sendSuccess({ res, message: t.successes.sessionDeleted });
   } catch (err) {
     return sendError({
       res,

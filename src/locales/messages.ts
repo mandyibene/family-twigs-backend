@@ -16,6 +16,7 @@ export const messages = {
       tooManyRegister: 'Too many sign-up attempts. Please try again later.',
       tooManyLogin: 'Too many login attempts. Please try again in 15 minutes.',
       tooManyUpdatePassword: 'Too many password updating attempts. Please try again later.',
+      noSessionId: 'No session id was provided',
     },
     successes: {
       register: 'User registered successfully',
@@ -25,7 +26,8 @@ export const messages = {
       userUpdated: 'User profile updated successfully',
       passwordUpdated: 'Password has been updated successfully',
       refresh: 'Refreshed tokens successfully',
-      sessionsFetched: 'Sessions fetched successfully'
+      sessionsFetched: 'Sessions fetched successfully',
+      sessionDeleted: 'Session deleted successfully',
     },
   },
   fr: {
@@ -43,6 +45,7 @@ export const messages = {
       tooManyRegister: 'Trop de tentatives d\'inscription. Réessayez plus tard.',
       tooManyLogin: 'Trop de tentatives de connexion. Réessayez dans 15 minutes.',
       tooManyUpdatePassword: 'Trop de tentatives de mise à jour du mot de passe. Réessayez plus tard.',
+      noSessionId: 'Aucun id de session n\'a été fourni',
     },
     successes: {
       register: 'Inscription réussie.',
@@ -52,7 +55,8 @@ export const messages = {
       userUpdated: 'Profil utilisateur mis à jour avec succès.',
       passwordUpdated: 'Le mot de passe a été mis à jour.',
       refresh: 'Les tokens ont été mis à jour avec succès.',
-      sessionsFetched: 'Sessions récupérées avec succès.'
+      sessionsFetched: 'Sessions récupérées avec succès.',
+      sessionDeleted: 'Session supprimée avec succès.',
     },
   },
 };
