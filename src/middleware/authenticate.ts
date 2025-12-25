@@ -20,22 +20,20 @@ import { verifyJwt } from '../utils/verifyJwt';
  */
 export const authenticate = (req: Request, res: Response, next: NextFunction) => {
   const t = getMessages(req.locale); // Localized messages
-  const authHeader = req.headers.authorization; // Extract Bearer <token> from headers
   
+  const authHeader = req.headers.authorization; // Extract Bearer <token> from headers
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return unauthorized(res, t.errors.unauthorized);
   }
 
   const token = authHeader.split(' ')[1];
-  
   if (!token) return unauthorized(res, t.errors.unauthorized);
 
   try {
     const payload = verifyJwt<{ userId: string }>(token, JWT.ACCESS_SECRET); // Verify JWT
-
     if (!payload) return unauthorized(res, t.errors.unauthorized);
 
-    req.userId = payload.userId; // Extends req with `userId` key to use in protected controllers
+    req.userId = payload.userId; // To use in protected controllers
     next();
   } catch (err) {
     return unauthorized(res, t.errors.unauthorized);

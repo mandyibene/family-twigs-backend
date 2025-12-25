@@ -44,7 +44,11 @@ export const registerAndGetToken = async (user: {
 }) => {
   const res = await registerUser(user);
 
-  return res.body.data.accessToken;
+  const accessToken = res.body.data.accessToken;
+  const rawCookies = res.headers['set-cookie'];
+  const cookies = rawCookies === undefined ? "" : rawCookies;
+
+  return { accessToken, cookies };
 };
 
 export const loginUser = async (email: string, password: string) => {
@@ -76,7 +80,7 @@ export const updateMe = async (
   updateInput: UpdateMeInput = {}
 ) => {
   return await request(app)
-    .put('/api/users/me')
+    .patch('/api/users/me')
     .set('Authorization', `Bearer ${accessToken}`)
     .send(updateInput);
 }
@@ -93,6 +97,17 @@ export const updatePassword = async (
     .put('/api/users/me/password')
     .set('Authorization', `Bearer ${accessToken}`)
     .send(updateInput);
+}
+
+export const getSessions = async (cookies: string, accessToken?: string) => {
+  if (accessToken) {
+    return await request(app)
+    .get('/api/users/me/sessions')
+    .set('Authorization', `Bearer ${accessToken}`)
+    .set('Cookie', cookies);
+  }
+
+  return await request(app).get('/api/users/me/sessions')
 }
 
 

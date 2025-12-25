@@ -19,6 +19,10 @@ export type ZodErrors = {
     nonempty: string,
     max: string,
   };
+  fullName: {
+    nonempty: string,
+    max: string,
+  };
   pseudo: {
     min: string;
     max: string;
@@ -27,6 +31,9 @@ export type ZodErrors = {
     nonempty: string;
     max: string;
     min: string;
+  }
+  date : {
+    invalidOrder : string;
   }
 };
 
@@ -50,6 +57,10 @@ export const zodErrors: Record<'en' | 'fr', ZodErrors> = {
       nonempty: "You must indicate a lastname",
       max: "Lastname must be at most 50 characters"
     },
+    fullName: {
+      nonempty: "You must indicate a fullname",
+      max: "Fullname must be at most 50 characters"
+    },
     pseudo: {
       min: "Pseudo should be at least 3 characters long",
       max: "Pseudo should be at most 30 characters long",
@@ -58,6 +69,9 @@ export const zodErrors: Record<'en' | 'fr', ZodErrors> = {
       nonempty: "You must indicate a name",
       min: "Tree name should be at least 3 characters long",
       max: "Tree name should be at most 100 characters long",
+    },
+    date: {
+      invalidOrder: "Death date should not come before birth date",
     }
   },
   fr: {
@@ -79,6 +93,10 @@ export const zodErrors: Record<'en' | 'fr', ZodErrors> = {
       nonempty: "Vous devez indiquer un nom",
       max: "Le nom ne doit pas dépasser 50 caractères"
     },
+    fullName: {
+      nonempty: "Vous devez indiquer un nom",
+      max: "Le nom ne doit pas dépasser 50 caractères"
+    },
     pseudo: {
       min: "Le pseudo doit contenir au moins 3 caractères",
       max: "Le pseudo doit contenir au plus 30 caractères",
@@ -87,6 +105,9 @@ export const zodErrors: Record<'en' | 'fr', ZodErrors> = {
       nonempty: "Vous devez indiquer un nom",
       min: "Le nom de l'arbre doit contenir au moins 3 caractères",
       max: "Le nom de l'arbre doit contenir au plus 100 caractères",
+    },
+    date: {
+      invalidOrder: "La date de décès doit venir après la date de naissance",
     }
   },
 };

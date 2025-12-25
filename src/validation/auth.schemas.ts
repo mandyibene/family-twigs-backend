@@ -27,10 +27,14 @@ export const getRegisterSchema = (locale: 'en' | 'fr') => {
         .nonempty(t.lastName.nonempty)
         .max(50, t.lastName.max)
     })
-    .refine((data) => data.password === data.confirmPassword, {
-      path: ['confirmPassword'], // Tells Zod which field the error belongs to
-      message: t.password.match,
-    });
+    .refine(
+      (data) => 
+        data.password === data.confirmPassword, 
+      {
+        path: ['confirmPassword'], // Tells Zod which field the error belongs to
+        message: t.password.match,
+      }
+    );
 }
 
 export const getLoginSchema = (locale: 'en' | 'fr') => {

@@ -13,11 +13,10 @@ import { LoginUserInput, RegisterUserInput } from '../types/auth.types';
 const prisma = new PrismaClient();
 
 export const registerUser = async (req: Request, res: Response) => {
+  const t = getMessages(req.locale); // Localized messages
 
   // Data validated by Zod
   const { email, password, firstName, lastName } = req.validatedData as RegisterUserInput;
-
-  const t = getMessages(req.locale); // Localized messages
 
   try {
     // Check if user already exists
@@ -57,8 +56,12 @@ export const registerUser = async (req: Request, res: Response) => {
     setRefreshToken(res, refreshToken);
 
     // Return access token in response
-    // return res.status(201).json({ accessToken });
-    return sendSuccess({ res, status: 201, message: t.successes.register, data: { accessToken } });
+    return sendSuccess({ 
+      res, 
+      status: 201, 
+      message: t.successes.register, 
+      data: { accessToken } 
+    });
 
   } catch (err) {
     return sendError({
@@ -71,11 +74,10 @@ export const registerUser = async (req: Request, res: Response) => {
 };
 
 export const loginUser = async (req: Request, res: Response) => {
-  
+  const t = getMessages(req.locale); // Localized messages
+
   // Data validated by Zod
   const { email, password } = req.validatedData as LoginUserInput;
-  
-  const t = getMessages(req.locale); // Localized messages
 
   try {
     // Find user by email
@@ -111,8 +113,11 @@ export const loginUser = async (req: Request, res: Response) => {
     setRefreshToken(res, refreshToken);
 
     // Return access token in response
-    // return res.status(200).json({ accessToken });
-    return sendSuccess({ res, message: t.successes.login, data: { accessToken } });
+    return sendSuccess({ 
+      res, 
+      message: t.successes.login, 
+      data: { accessToken } 
+    });
 
   } catch (err) {
     return sendError({
@@ -162,8 +167,11 @@ export const refreshToken = async (req: Request, res: Response) => {
     // Set new refresh token cookie
     setRefreshToken(res, newRefreshToken);
 
-    // return res.json({ accessToken: newAccessToken });
-    return sendSuccess({ res, message: t.successes.refresh, data: { accessToken: newAccessToken } });
+    return sendSuccess({ 
+      res, 
+      message: t.successes.refresh, 
+      data: { accessToken: newAccessToken } 
+    });
   } catch (err) {
     return unauthorized(res, t.errors.unauthorized);
   }

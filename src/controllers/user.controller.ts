@@ -2,16 +2,14 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { getMessages } from '../utils/getMessages';
-import { badRequest, sendError, sendSuccess, unauthorized } from '../utils/httpResponse';
+import { badRequest, sendError, sendSuccess } from '../utils/httpResponse';
 import { UpdatePasswordInput, UpdateUserProfileInput } from '../types/user.types';
 
 const prisma = new PrismaClient();
 
 export const getCurrentUser = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
-  
   const userId = req.userId;
-  if (!userId) return unauthorized(res, t.errors.unauthorized);
 
   try {
     const user = await prisma.user.findUnique({
@@ -19,6 +17,8 @@ export const getCurrentUser = async (req: Request, res: Response) => {
       select: {
         id: true,
         email: true,
+        firstName: true,
+        lastName: true,
         createdAt: true,
       },
     });
@@ -29,7 +29,6 @@ export const getCurrentUser = async (req: Request, res: Response) => {
       status: 404,
       code: 'USER_NOT_FOUND',
       message: t.errors.userNotFound,
-      context: 'GET USER ERROR',
     });
     }
 
@@ -38,8 +37,8 @@ export const getCurrentUser = async (req: Request, res: Response) => {
     return sendError({
       res,
       code: 'INTERNAL_SERVER_ERROR',
-      message: t.errors.internal,
       context: 'GET USER ERROR',
+      message: t.errors.internal,
       log: err,
     });
   }
@@ -47,11 +46,8 @@ export const getCurrentUser = async (req: Request, res: Response) => {
 
 export const updateUserProfile = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
-  
   const userId = req.userId;
-  if (!userId) return unauthorized(res, t.errors.unauthorized);
-
-  const data = req.validatedData as UpdateUserProfileInput;
+  const data = req.validatedData as UpdateUserProfileInput; // Data validated by Zod
 
   try {
     // Check if pseudo is taken
@@ -68,8 +64,8 @@ export const updateUserProfile = async (req: Request, res: Response) => {
           res,
           status: 409,
           code: 'PSEUDO_TAKEN',
-          message: t.errors.pseudoTaken,
           context: 'UPDATE PROFILE ERROR',
+          message: t.errors.pseudoTaken,
         });
       }
     }
@@ -89,30 +85,31 @@ export const updateUserProfile = async (req: Request, res: Response) => {
       },
     });
 
-    return sendSuccess({ res, message: t.successes.userFetched, data: { user: updatedUser } });
+    return sendSuccess({ 
+      res, 
+      message: t.successes.userFetched, 
+      data: { user: updatedUser } 
+    });
   } catch (err) {
     return sendError({
       res,
       code: 'INTERNAL_SERVER_ERROR',
-      message: t.errors.internal,
       context: 'UPDATE PROFILE ERROR',
+      message: t.errors.internal,
       log: err,
     });
   }
 };
 
 export const updatePassword = async (req: Request, res: Response) => {
-
-  // Data validated by Zod
+  const t = getMessages(req.locale); // Localized messages
+  const userId = req.userId;
   const { currentPassword, newPassword } = req.validatedData as UpdatePasswordInput;
 
-  const t = getMessages(req.locale); // Localized messages
-
-  const userId = req.userId;
-  if (!userId) return unauthorized(res, t.errors.unauthorized);
-
   try {
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await prisma.user.findUnique({ 
+      where: { id: userId } 
+    });
 
     if (!user) {
       return sendError({
@@ -146,6 +143,7 @@ export const updatePassword = async (req: Request, res: Response) => {
     return sendError({
       res,
       code: 'INTERNAL_SERVER_ERROR',
+      context: 'UPDATE PASSWORD ERROR',
       message: t.errors.internal,
       log: err,
     });
@@ -154,9 +152,7 @@ export const updatePassword = async (req: Request, res: Response) => {
 
 export const getUserSessions = async (req: Request, res: Response) => {
   const t = getMessages(req.locale);
-  
   const userId = req.userId;
-  if (!userId) return unauthorized(res, t.errors.unauthorized);
 
   try {
     const sessions = await prisma.session.findMany({
@@ -175,6 +171,7 @@ export const getUserSessions = async (req: Request, res: Response) => {
     
     // Mark current session
     const currentRefreshToken = req.cookies?.refreshToken;
+    
     const sessionsWithCurrentBoolean = sessions.map(session => {
       // Separate refreshToken from other properties, we don't need it in the response
       let {refreshToken, ...s} = session;
@@ -185,7 +182,11 @@ export const getUserSessions = async (req: Request, res: Response) => {
       }
     })
 
-    return sendSuccess({ res, message: t.successes.sessionsFetched, data: { sessionsWithCurrentBoolean } });
+    return sendSuccess({ 
+      res, 
+      message: t.successes.sessionsFetched, 
+      data: { sessions: sessionsWithCurrentBoolean } 
+    });
   } catch (err) {
     return sendError({
       res,
@@ -199,9 +200,6 @@ export const getUserSessions = async (req: Request, res: Response) => {
 
 export const deleteUserSession = async (req: Request, res: Response) => {
   const t = getMessages(req.locale);
-  
-  const userId = req.userId;
-  if (!userId) return unauthorized(res, t.errors.unauthorized);
 
   const sessionId = req.params.sessionId;
   if (!sessionId) return badRequest(res, t.errors.noSessionId);
@@ -214,7 +212,7 @@ export const deleteUserSession = async (req: Request, res: Response) => {
     return sendError({
       res,
       code: 'INTERNAL_SERVER_ERROR',
-      context: 'GET SESSIONS ERROR',
+      context: 'DELETE SESSION ERROR',
       message: t.errors.internal,
       log: err,
     });

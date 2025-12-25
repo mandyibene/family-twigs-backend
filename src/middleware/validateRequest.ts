@@ -7,13 +7,12 @@ export const validateRequest = <T>(
   getSchema: (locale: 'en' | 'fr') => ZodType<T>
 ) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    // Request extended with locale field in detectLocale middleware
-    const schema = getSchema(req.locale || 'en');
-
-    const cleanBody = cleanInputFields(req.body);
-    const result = schema.safeParse(cleanBody);
-
     const t = getMessages(req.locale); // Localized messages
+    
+    const cleanBody = cleanInputFields(req.body);
+    
+    const schema = getSchema(req.locale || 'en');
+    const result = schema.safeParse(cleanBody);
 
     if (!result.success) {
       const details = z.treeifyError(result.error);
@@ -27,7 +26,7 @@ export const validateRequest = <T>(
       });
     }
 
-    // Store parsed data on request (to avoid re-validating)
+    // Store parsed data in request (to avoid re-validating)
     req.validatedData = result.data;
     next();
   };

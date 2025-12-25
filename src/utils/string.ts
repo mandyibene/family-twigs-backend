@@ -23,14 +23,16 @@ export function cleanString(input: string): string {
 /**
  * Recursively clean all string fields in a flat (non-nested) object.
  * 
- * * @param data - A flat object
+ * @param data - A flat object
+ * @returns The flat object with cleaned strings
  */
 export const cleanInputFields = <T extends Record<string, any>>(data: T): T => {
   const trimmed: Record<string, any> = {};
 
   for (const key in data) {
     const value = data[key];
-    trimmed[key] = typeof value === 'string' ? cleanString(value) : value; // Only clean if value is a string
+    // Only clean if value is a string
+    trimmed[key] = typeof value === 'string' ? cleanString(value) : value;
   }
 
   return trimmed as T;

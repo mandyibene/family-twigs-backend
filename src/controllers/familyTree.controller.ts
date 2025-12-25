@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { getMessages } from '../utils/getMessages';
-import { sendError, unauthorized } from '../utils/httpResponse';
-import { FamilyTreeInput } from '../types/familyTree.types';
+import { sendError, sendSuccess } from '../utils/httpResponse';
+import { DeleteTreeParams, FamilyTreeInput, UpdateTreeNameParams } from '../types/familyTree.types';
+import { fullTreeInclude } from '../utils/prismaIncludes';
 
 const prisma = new PrismaClient();
 
@@ -11,9 +12,24 @@ export const createFamilyTree = async (req: Request, res: Response) => {
   const userId = req.userId;
   const { name } = req.validatedData as FamilyTreeInput;
 
-  if (!userId) return unauthorized(res, t.errors.unauthorized);
-
   try {
+    // Check for duplicated name
+    const isTaken = await prisma.familyTree.findFirst({
+      where: {
+        name,
+      },
+    });
+
+    if (isTaken) {
+      return sendError({
+        res,
+        status: 409,
+        code: 'TREE_NAME_TAKEN',
+        message: t.errors.treeNameTaken,
+        context: 'CREATE TREE',
+      });
+    }
+
     const newTree = await prisma.familyTree.create({
       data: {
         name,
@@ -26,12 +42,65 @@ export const createFamilyTree = async (req: Request, res: Response) => {
         },
       },
     });
-    return res.status(201).json({ tree: newTree });
+    
+    return sendSuccess({ 
+      res, 
+      status: 201, 
+      message: t.successes.treeCreated, 
+      data: { tree: newTree } 
+    });
   } catch (err) {
     return sendError({
       res,
       code: 'INTERNAL_SERVER_ERROR',
       message: t.errors.internal,
+      context: 'CREATE TREE',
+      log: err,
+    });
+  }
+};
+
+export const updateTreeName = async (req: Request<UpdateTreeNameParams>, res: Response) => {
+  const t = getMessages(req.locale); // Localized messages
+  const { id: treeId } = req.params;
+  const { name } = req.validatedData as FamilyTreeInput;
+
+  try {
+    // Check for duplicated name
+    const isTaken = await prisma.familyTree.findFirst({
+      where: {
+        name,
+        NOT: { id: treeId },
+      },
+    });
+
+    if (isTaken) {
+      return sendError({
+        res,
+        status: 409,
+        code: 'TREE_NAME_TAKEN',
+        message: t.errors.treeNameTaken,
+        context: 'UPDATE TREE NAME',
+      });
+    }
+
+    const updatedTree = await prisma.familyTree.update({
+      where: { id: treeId },
+      data: { name },
+      include: fullTreeInclude,
+    });
+
+    return sendSuccess({ 
+      res, 
+      message: t.successes.treeUpdated, 
+      data: { tree: updatedTree } 
+    });
+  } catch (err) {
+    return sendError({
+      res,
+      code: 'INTERNAL_SERVER_ERROR',
+      message: t.errors.internal,
+      context: 'UPDATE TREE NAME',
       log: err,
     });
   }
@@ -40,8 +109,6 @@ export const createFamilyTree = async (req: Request, res: Response) => {
 export const getUserTrees = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
   const userId = req.userId;
-
-  if (!userId) return unauthorized(res, t.errors.unauthorized);
 
   try {
     const trees = await prisma.familyTree.findMany({
@@ -52,16 +119,21 @@ export const getUserTrees = async (req: Request, res: Response) => {
           },
         },
       },
-      include: {
-        owner: true,
-      },
+      include: fullTreeInclude,
     });
-    return res.status(200).json({ trees });
+
+    return sendSuccess({ 
+      res, 
+      status: 200, 
+      message: t.successes.treesFetched, 
+      data: { trees } 
+    });
   } catch (err) {
     return sendError({
       res,
       code: 'INTERNAL_SERVER_ERROR',
       message: t.errors.internal,
+      context: 'GET USER TREES',
       log: err,
     });
   }
@@ -71,27 +143,28 @@ export const getOwnedTrees = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
   const userId = req.userId;
 
-  if (!userId) return unauthorized(res, t.errors.unauthorized);
-
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
         ownedTrees: {
-          include: {
-            members: true,
-            people: true,
-          },
+          include: fullTreeInclude,
         },
       },
     });
 
-    return res.status(200).json({ trees: user?.ownedTrees ?? [] });
+    return sendSuccess({ 
+      res, 
+      status: 200, 
+      message: t.successes.treesFetched, 
+      data: { trees: user?.ownedTrees ?? [] } 
+    });
   } catch (err) {
     return sendError({
       res,
       code: 'INTERNAL_SERVER_ERROR',
       message: t.errors.internal,
+      context: 'GET OWNED TREES',
       log: err,
     });
   }
@@ -99,52 +172,28 @@ export const getOwnedTrees = async (req: Request, res: Response) => {
 
 export const getTreeById = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
-  const userId = req.userId;
-  const { id } = req.params;
+  
+  return sendSuccess({ 
+    res, status: 200, 
+    message: t.successes.treeFetched, 
+    data: { tree: req.tree } 
+  });
+};
 
-  if (!userId) return unauthorized(res, t.errors.unauthorized);
-
-  if (!id) {
-    return sendError({
-      res,
-      status: 400,
-      code: 'INVALID_ID',
-      message: 'Tree id is required',
-    });
-  }
+export const deleteTree = async (req: Request<DeleteTreeParams>, res: Response) => {
+  const t = getMessages(req.locale); // Localized messages
+  const { id: treeId } = req.params;
 
   try {
-    const tree = await prisma.familyTree.findFirst({
-      where: {
-        id,
-        members: {
-          some: {
-            userId,
-          },
-        },
-      },
-      include: {
-        people: true,
-        members: { include: { user: true } },
-        owner: true,
-      },
-    });
+    await prisma.familyTree.delete({ where: { id: treeId } });
 
-    if (!tree) {
-      return sendError({
-        res,
-        status: 404,
-        code: 'TREE_NOT_FOUND',
-        message: t.errors.treeNotFound,
-      });
-    }
-
-    return res.status(200).json({ tree });
+    return sendSuccess({ res, message: t.successes.treeDeleted });
   } catch (err) {
     return sendError({
       res,
       code: 'INTERNAL_SERVER_ERROR',
       message: t.errors.internal,
+      context: 'DELETE TREE',
       log: err,
     });
   }

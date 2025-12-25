@@ -7,10 +7,19 @@ import { updatePasswordRateLimiter } from '../middleware/rateLimiters';
 
 const router = Router();
 
+// Fetch curent user
 router.get('/me', authenticate, getCurrentUser);
-router.put('/me', authenticate, validateRequest(getUpdateUserSchema), updateUserProfile);
+
+// Update current user
+router.patch('/me', authenticate, validateRequest(getUpdateUserSchema), updateUserProfile);
+
+// Update password
 router.put('/me/password', authenticate, updatePasswordRateLimiter, validateRequest(getUpdatePasswordSchema), updatePassword);
+
+// Fetch user sessions
 router.get('/me/sessions', authenticate, getUserSessions);
+
+// Delete session by id
 router.delete('/me/sessions/:sessionId', authenticate, deleteUserSession);
 
 export default router;

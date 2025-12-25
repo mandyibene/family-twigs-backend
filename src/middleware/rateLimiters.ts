@@ -12,7 +12,7 @@ const createRateLimiter = (options: {
   messageKey: keyof ReturnType<typeof getMessages>['errors'];
 }) => {
   return rateLimit({
-    windowMs: isTest ? 1000 : options.windowMs || 15 * 60 * 1000, // 1s in test, 15 min default
+    windowMs: isTest ? 2000 : options.windowMs || 15 * 60 * 1000, // 1s in test, 15 min default
     max: isTest ? 2 : options.max || 5, // 2 attempts in test, 5 attempts default
     message: (req: Request) => {
       const t = getMessages(req.locale);

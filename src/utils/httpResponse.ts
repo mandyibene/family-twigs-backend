@@ -7,7 +7,10 @@ import { Response } from 'express';
 type ErrorCode =
   | 'INTERNAL_SERVER_ERROR'
   | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
+  | 'INSUFFICIENT_ROLE'
   | 'BAD_REQUEST'
+  | 'TREE_ID_REQUIRED'
   | 'USER_ALREADY_EXISTS'
   | 'INVALID_CREDENTIALS'
   | 'INVALID_INPUT'
@@ -15,7 +18,8 @@ type ErrorCode =
   | 'INCORRECT_PASSWORD'
   | 'USER_NOT_FOUND'
   | 'PSEUDO_TAKEN'
-  | 'TREE_NOT_FOUND';
+  | 'TREE_NOT_FOUND'
+  | 'TREE_NAME_TAKEN';
 
 interface SendErrorParams {
   res: Response;
@@ -64,11 +68,14 @@ export const sendError = ({
   });
 };
 
-export const unauthorized = (res: Response, message: string) =>
-  sendError({ res, status: 401, code: 'UNAUTHORIZED', message });
+export const badRequest = (res: Response, message: string, code?: ErrorCode) =>
+  sendError({ res, status: 400, code: code ?? 'BAD_REQUEST', message });
 
-export const badRequest = (res: Response, message: string) =>
-  sendError({ res, status: 400, code: 'BAD_REQUEST', message });
+export const unauthorized = (res: Response, message: string, code?: ErrorCode) =>
+  sendError({ res, status: 401, code: code ?? 'UNAUTHORIZED', message });
+
+export const forbidden = (res: Response, message: string, code?: ErrorCode) =>
+  sendError({ res, status: 403, code: code ?? 'FORBIDDEN', message });
 
 
 // ========================================

@@ -2,6 +2,7 @@ import {
   createTestUser, 
   disconnectDatabase, 
   getMe, 
+  getSessions, 
   registerAndGetToken, 
   resetDatabase, 
   updateMe, 
@@ -23,14 +24,16 @@ describe('GET /api/users/me', () => {
   beforeAll(async () => {
     await resetDatabase(); // Clean the db
     const user = createTestUser('me');
-    accessToken = await registerAndGetToken(user);
+    const registerRes = await registerAndGetToken(user);
+    accessToken = registerRes.accessToken;
   });
 
   it('should return user info when authenticated', async () => {
     const res = await getMe(accessToken);
     expect(res.statusCode).toBe(200);
     expect(res.body.data.user.email).toBeDefined();
-    expect(res.body.data.user.email).toMatch(/@example.com/);
+    expect(res.body.data.user.firstName).toBeDefined();
+    expect(res.body.data.user.lastName).toBeDefined();
   });
 
   it('should return 401 if no token is provided', async () => {
@@ -47,13 +50,14 @@ describe('GET /api/users/me', () => {
   });
 });
 
-describe('PUT /api/users/me', () => {
+describe('PATCH /api/users/me', () => {
   let accessToken: string;
 
   beforeAll(async () => {
     await resetDatabase();
     const user = createTestUser('update-me', { firstName: 'Giorno', lastName: 'Giovanna' });
-    accessToken = await registerAndGetToken(user);
+    const registerRes = await registerAndGetToken(user);
+    accessToken = registerRes.accessToken;
   });
 
   it('should update user profile', async () => {
@@ -72,6 +76,8 @@ describe('PUT /api/users/me', () => {
       expect(res.body.data.user[key]).toBe(updatedInfo[typedKey]);
     }
   });
+
+  // [TO ADD] Test on duplicated pseudo
 });
 
 describe('PUT /api/users/me/password', () => {
@@ -87,7 +93,8 @@ describe('PUT /api/users/me/password', () => {
 
   beforeAll(async () => {
     await resetDatabase();
-    accessToken = await registerAndGetToken(user);
+    const registerRes = await registerAndGetToken(user);
+    accessToken = registerRes.accessToken;
   });
 
   it('should update the password when current password is correct', async () => {
@@ -128,5 +135,26 @@ describe('PUT /api/users/me/password', () => {
     )
 
     expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('INVALID_INPUT');
+  });
+});
+
+describe('GET /api/users/me/sessions', () => {
+  let accessToken: string;
+  let cookies: string;
+
+  beforeAll(async () => {
+    await resetDatabase();
+    const user = createTestUser('get-sessions');
+    const registerRes = await registerAndGetToken(user);
+    accessToken = registerRes.accessToken;
+    cookies = registerRes.cookies;
+  });
+
+  it('should return user sessions', async () => {
+    const res = await getSessions(cookies, accessToken);
+    
+    expect(res.status).toBe(200);
+    expect(res.body.data.sessions).toBeDefined();
   });
 });
