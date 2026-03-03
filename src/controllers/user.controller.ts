@@ -155,7 +155,15 @@ export const getUserSessions = async (req: Request, res: Response) => {
   const userId = req.userId;
 
   try {
-    const sessions = await prisma.session.findMany({
+    const sessions : {
+      id: string;
+      refreshToken: string;
+      userAgent: string | null;
+      ip: string | null;
+      createdAt: Date;
+      expiresAt: Date;
+      updatedAt: Date;
+    }[] = await prisma.session.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },
       select: {
@@ -201,7 +209,7 @@ export const getUserSessions = async (req: Request, res: Response) => {
 export const deleteUserSession = async (req: Request, res: Response) => {
   const t = getMessages(req.locale);
 
-  const sessionId = req.params.sessionId;
+  const sessionId = req.params.sessionId as string;
   if (!sessionId) return badRequest(res, t.errors.noSessionId);
 
   try {

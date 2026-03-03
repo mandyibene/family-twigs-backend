@@ -6,11 +6,11 @@ export interface FamilyTreeInput {
 }
 
 export type UpdateTreeNameParams = {
-  id: string;
+  treeId: string;
 };
 
 export type DeleteTreeParams = {
-  id: string;
+  treeId: string;
 };
 
 export type FamilyTreeWithRelations = Prisma.FamilyTreeGetPayload<{

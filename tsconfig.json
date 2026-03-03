@@ -13,8 +13,7 @@
     "moduleResolution": "node", // Let TS resolve modules like Node.js does
     
     // Type Declarations
-    "types": ["node", "jest"],          // Include Node.js global types
-    // and npm install -D @types/node
+    "typeRoots" : ["./src/types", "./node_modules/@types"],
 
     // Other Outputs
     "sourceMap": true,          // Generate source maps for JS files (to map back to TS files)
@@ -31,6 +30,6 @@
     "forceConsistentCasingInFileNames": true,   // Ensure that casing is correct in imports
     "skipLibCheck": true,                       // Skip type checking in `.d.ts` files (faster)
   },
-  "include": ["src", "src/types", "src/tests"],
+  "include": ["src", "src/types", "src/types/express", "src/tests"],
   "exclude": ["node_modules", "src/tests"]
 }

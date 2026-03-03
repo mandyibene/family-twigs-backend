@@ -62,7 +62,7 @@ export const createFamilyTree = async (req: Request, res: Response) => {
 
 export const updateTreeName = async (req: Request<UpdateTreeNameParams>, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
-  const { id: treeId } = req.params;
+  const { treeId } = req.params;
   const { name } = req.validatedData as FamilyTreeInput;
 
   try {
@@ -182,7 +182,7 @@ export const getTreeById = async (req: Request, res: Response) => {
 
 export const deleteTree = async (req: Request<DeleteTreeParams>, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
-  const { id: treeId } = req.params;
+  const { treeId } = req.params;
 
   try {
     await prisma.familyTree.delete({ where: { id: treeId } });

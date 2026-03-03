@@ -11,7 +11,7 @@ const router = Router();
 router.post('/', authenticate, validateRequest(getCreateTreeSchema), createFamilyTree);
 
 // Update tree name
-router.put('/:id', authenticate, requireTreeOwner(), validateRequest(getUpdateTreeSchema), updateTreeName);
+router.put('/:treeId', authenticate, requireTreeOwner(), validateRequest(getUpdateTreeSchema), updateTreeName);
 
 // Fetch trees user is a member of
 router.get('/', authenticate, getUserTrees);
@@ -20,9 +20,9 @@ router.get('/', authenticate, getUserTrees);
 router.get('/owned', authenticate, getOwnedTrees);
 
 // Fetch tree by id
-router.get('/:id', authenticate, requireTreeRole(true), getTreeById);
+router.get('/:treeId', authenticate, requireTreeRole(true), getTreeById);
 
 // Delete tree by id
-router.delete('/:id', authenticate, requireTreeOwner(), deleteTree);
+router.delete('/:treeId', authenticate, requireTreeOwner(), deleteTree);
 
 export default router;

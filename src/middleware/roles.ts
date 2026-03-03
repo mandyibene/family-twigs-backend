@@ -13,7 +13,7 @@ export const requireTreeOwner = (preload = false) => {
 
     const userId = req.userId;
 
-    const { id: treeId } = req.params;
+    const treeId = req.params.treeId as string;
     if (!treeId)
       return badRequest(res, t.errors.treeIdRequired, "TREE_ID_REQUIRED");
 
@@ -52,7 +52,7 @@ export const requireTreeRole = (
 
     const userId = req.userId;
     
-    const { id: treeId } = req.params;
+    const treeId = req.params.treeId as string;
     if (!treeId)
       return badRequest(res, t.errors.treeIdRequired, "TREE_ID_REQUIRED");
 
