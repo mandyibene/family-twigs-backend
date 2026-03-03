@@ -31,5 +31,5 @@
     "skipLibCheck": true,                       // Skip type checking in `.d.ts` files (faster)
   },
   "include": ["src", "src/types", "src/types/express", "src/tests"],
-  "exclude": ["node_modules", "src/tests"]
+  "exclude": ["node_modules"]
 }

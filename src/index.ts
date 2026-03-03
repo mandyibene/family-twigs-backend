@@ -1,5 +1,5 @@
+import 'dotenv/config';
 import express from 'express';
-import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { detectLocale } from './middleware/detectLocale';
@@ -9,8 +9,6 @@ import familyTreeRoutes from './routes/familyTree.routes';
 import { ENV } from './config';
 import helmet from 'helmet';
 import { cleanSessions } from '../tasks/cleanSessions'
-
-dotenv.config();
 
 const app = express();
 
