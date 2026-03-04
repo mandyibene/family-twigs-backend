@@ -1,11 +1,36 @@
 import { Prisma } from "@prisma/client";
 
+// ============== SELECT ==============
+
+const publicUserSelect = {
+  id: true,
+  pseudo: true,
+  avatarUrl: true,
+} satisfies Prisma.UserSelect;
+
+
+// ============== INCLUDE ==============
+
 export const treeWithMembersInclude = {
-  members: { include: { user: true } },
+  members: { 
+    include: {
+      user: {
+        select: publicUserSelect,
+      },
+    },
+  },
 };
 
 export const fullTreeInclude: Prisma.FamilyTreeInclude = {
-  owner: true,
-  members: { include: { user: true } },
+  owner: {
+    select: publicUserSelect,
+  },
+  members: { 
+    include: { 
+      user: {
+        select: publicUserSelect,
+      },
+    },
+  },
   people: true,
 };

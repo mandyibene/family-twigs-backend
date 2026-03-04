@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { getMessages } from '../utils/getMessages';
-import { badRequest, sendError, sendSuccess } from '../utils/httpResponse';
+import { badRequest, notFound, sendError, sendSuccess, unauthorized } from '../utils/httpResponse';
 import { UpdatePasswordInput, UpdateUserProfileInput } from '../types/user.types';
 
 const prisma = new PrismaClient();
@@ -24,22 +24,16 @@ export const getCurrentUser = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return sendError({
-      res,
-      status: 404,
-      code: 'USER_NOT_FOUND',
-      message: t.errors.userNotFound,
-    });
+      throw new Error("Authenticated user not found in database");
     }
 
     return sendSuccess({ res, message: t.successes.userFetched, data: { user } });
   } catch (err) {
     return sendError({
       res,
-      code: 'INTERNAL_SERVER_ERROR',
       context: 'GET USER ERROR',
-      message: t.errors.internal,
       log: err,
+      message: t.errors.internal,
     });
   }
 };
@@ -63,9 +57,10 @@ export const updateUserProfile = async (req: Request, res: Response) => {
         return sendError({
           res,
           status: 409,
-          code: 'PSEUDO_TAKEN',
-          context: 'UPDATE PROFILE ERROR',
+          context: 'UPDATE PROFILE',
+          log: "Pseudo is already taken.",
           message: t.errors.pseudoTaken,
+          code: 'PSEUDO_TAKEN',
         });
       }
     }
@@ -93,10 +88,9 @@ export const updateUserProfile = async (req: Request, res: Response) => {
   } catch (err) {
     return sendError({
       res,
-      code: 'INTERNAL_SERVER_ERROR',
-      context: 'UPDATE PROFILE ERROR',
-      message: t.errors.internal,
+      context: 'UPDATE PROFILE',
       log: err,
+      message: t.errors.internal,
     });
   }
 };
@@ -112,23 +106,20 @@ export const updatePassword = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return sendError({
-        res,
-        status: 404,
-        code: 'USER_NOT_FOUND',
-        message: t.errors.userNotFound,
-      });
+      throw new Error("Authenticated user not found in database");
     }
 
     // Check current password
     const isMatching = await bcrypt.compare(currentPassword, user.password);
     if (!isMatching) {
-      return sendError({
-        res,
-        status: 401,
-        code: 'INCORRECT_PASSWORD',
-        message: t.errors.incorrectPassword,
-      });
+      // return sendError({
+      //   res,
+      //   status: 401,
+      //   code: 'INCORRECT_PASSWORD',
+      //   context: 'UPDATE PASSWORD',
+      //   message: t.errors.incorrectPassword,
+      // });
+      return unauthorized(res, "UPDATE PASSWORD", "Incorrect password.", t.errors.incorrectPassword, "INCORRECT_PASSWORD")
     }
 
     // Hash new password
@@ -142,10 +133,9 @@ export const updatePassword = async (req: Request, res: Response) => {
   } catch (err) {
     return sendError({
       res,
-      code: 'INTERNAL_SERVER_ERROR',
-      context: 'UPDATE PASSWORD ERROR',
-      message: t.errors.internal,
+      context: 'UPDATE PASSWORD',
       log: err,
+      message: t.errors.internal,
     });
   }
 };
@@ -198,31 +188,39 @@ export const getUserSessions = async (req: Request, res: Response) => {
   } catch (err) {
     return sendError({
       res,
-      code: 'INTERNAL_SERVER_ERROR',
-      context: 'GET SESSIONS ERROR',
-      message: t.errors.internal,
+      context: 'GET USER SESSIONS',
       log: err,
+      message: t.errors.internal,
     });
   }
 };
 
 export const deleteUserSession = async (req: Request, res: Response) => {
   const t = getMessages(req.locale);
+  const userId = req.userId;
 
   const sessionId = req.params.sessionId as string;
-  if (!sessionId) return badRequest(res, t.errors.noSessionId);
+  if (!sessionId) return badRequest(res, "DELETE USER SESSION", "Missing sessionId in req.params.", t.errors.noSessionId, "SESSION_ID_REQUIRED");
 
   try {
-    await prisma.session.delete({ where: { id: sessionId } });
+    const result = await prisma.session.deleteMany({ // deleteMany returns { count }
+      where: { 
+        id: sessionId,
+        userId
+      }
+    });
+
+    if (result.count === 0) {
+      return notFound(res, "DELETE USER SESSION", "Session not found.", t.errors.notFound);
+    }
 
     return sendSuccess({ res, message: t.successes.sessionDeleted });
   } catch (err) {
     return sendError({
       res,
-      code: 'INTERNAL_SERVER_ERROR',
-      context: 'DELETE SESSION ERROR',
-      message: t.errors.internal,
+      context: 'DELETE USER SESSION',
       log: err,
+      message: t.errors.internal,
     });
   }
 };

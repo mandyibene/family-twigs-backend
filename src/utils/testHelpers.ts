@@ -18,6 +18,26 @@ export const disconnectDatabase = async () => {
   await prisma.$disconnect();
 };
 
+export const createTestUser = (
+  emailPrefix: string,
+  overrides: Partial<{
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+  }> = {}
+) => {
+  const timestamp = Date.now();
+  
+  return {
+    email: overrides.email || `${emailPrefix}${timestamp}@example.com`,
+    password: overrides.password || 'StrongP@ssw0rd!',
+    firstName: overrides.firstName || 'Jolyne',
+    lastName: overrides.lastName || 'Cujoh',
+  };
+};
+
+// ============== AUTH ==============
 
 export const registerUser = async (user: {
   email: string;
@@ -51,12 +71,25 @@ export const registerAndGetToken = async (user: {
   return { accessToken, cookies };
 };
 
+export const getRefreshToken = (res: request.Response) => {
+  const setCookieHeader = res.headers['set-cookie'];
+  if (!setCookieHeader) return undefined;
+
+  const refreshCookie = Array.isArray(setCookieHeader)
+    ? setCookieHeader.find((cookie) => cookie.startsWith('refreshToken='))
+    : undefined;
+
+  return refreshCookie;
+};
+
 export const loginUser = async (email: string, password: string) => {
   return await request(app)
     .post('/api/auth/login')
     .set('Accept-Language', 'en')
     .send({ email, password });
 };
+
+// ============== USER ==============
 
 export const getMe = async (accessToken?: string) => {
   if (accessToken) {
@@ -110,34 +143,59 @@ export const getSessions = async (cookies: string, accessToken?: string) => {
   return await request(app).get('/api/users/me/sessions')
 }
 
+// ============== FAMILY TREE ==============
 
-export const getRefreshToken = (res: request.Response) => {
-  const setCookieHeader = res.headers['set-cookie'];
-  if (!setCookieHeader) return undefined;
-
-  const refreshCookie = Array.isArray(setCookieHeader)
-    ? setCookieHeader.find((cookie) => cookie.startsWith('refreshToken='))
-    : undefined;
-
-  return refreshCookie;
+export const createFamilyTree = async (
+  accessToken: string,
+  name: string
+) => {
+  return await request(app)
+    .post('/api/trees/')
+    .set('Authorization', `Bearer ${accessToken}`)
+    .send({name});
 };
 
-
-export const createTestUser = (
-  emailPrefix: string,
-  overrides: Partial<{
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-  }> = {}
+export const updateTreeName = async (
+  accessToken: string,
+  name: string,
+  treeId: string
 ) => {
-  const timestamp = Date.now();
-  
-  return {
-    email: overrides.email || `${emailPrefix}${timestamp}@example.com`,
-    password: overrides.password || 'StrongP@ssw0rd!',
-    firstName: overrides.firstName || 'Jolyne',
-    lastName: overrides.lastName || 'Cujoh',
-  };
+  return await request(app)
+    .put(`/api/trees/${treeId}`)
+    .set('Authorization', `Bearer ${accessToken}`)
+    .send({name});
+};
+
+export const getUserTrees = async (
+  accessToken: string,
+) => {
+  return await request(app)
+    .get('/api/trees/')
+    .set('Authorization', `Bearer ${accessToken}`)
+};
+
+export const getOwnedTrees = async (
+  accessToken: string
+) => {
+  return await request(app)
+    .get('/api/trees/owned/')
+    .set('Authorization', `Bearer ${accessToken}`)
+};
+
+export const getTreeById = async (
+  accessToken: string,
+  treeId: string,
+) => {
+  return await request(app)
+    .get(`/api/trees/${treeId}`)
+    .set('Authorization', `Bearer ${accessToken}`)
+};
+
+export const deleteTree = async (
+  accessToken: string,
+  treeId: string,
+) => {
+  return await request(app)
+    .delete(`/api/trees/${treeId}`)
+    .set('Authorization', `Bearer ${accessToken}`)
 };

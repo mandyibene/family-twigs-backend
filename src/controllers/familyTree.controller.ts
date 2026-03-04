@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { getMessages } from '../utils/getMessages';
-import { sendError, sendSuccess } from '../utils/httpResponse';
+import { badRequest, notFound, sendError, sendSuccess } from '../utils/httpResponse';
 import { DeleteTreeParams, FamilyTreeInput, UpdateTreeNameParams } from '../types/familyTree.types';
 import { fullTreeInclude } from '../utils/prismaIncludes';
 
@@ -24,9 +24,10 @@ export const createFamilyTree = async (req: Request, res: Response) => {
       return sendError({
         res,
         status: 409,
-        code: 'TREE_NAME_TAKEN',
-        message: t.errors.treeNameTaken,
         context: 'CREATE TREE',
+        log: 'Tree name is already taken',
+        message: t.errors.treeNameTaken,
+        code: 'TREE_NAME_TAKEN',
       });
     }
 
@@ -78,9 +79,10 @@ export const updateTreeName = async (req: Request<UpdateTreeNameParams>, res: Re
       return sendError({
         res,
         status: 409,
-        code: 'TREE_NAME_TAKEN',
-        message: t.errors.treeNameTaken,
         context: 'UPDATE TREE NAME',
+        log: 'Tree name is already taken',
+        message: t.errors.treeNameTaken,
+        code: 'TREE_NAME_TAKEN',
       });
     }
 
@@ -131,10 +133,9 @@ export const getUserTrees = async (req: Request, res: Response) => {
   } catch (err) {
     return sendError({
       res,
-      code: 'INTERNAL_SERVER_ERROR',
-      message: t.errors.internal,
       context: 'GET USER TREES',
       log: err,
+      message: t.errors.internal,
     });
   }
 };
@@ -144,48 +145,91 @@ export const getOwnedTrees = async (req: Request, res: Response) => {
   const userId = req.userId;
 
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: {
-        ownedTrees: {
-          include: fullTreeInclude,
-        },
+    const trees = await prisma.familyTree.findMany({
+      where: {
+        ownerId: userId,
       },
+      include: fullTreeInclude,
     });
 
     return sendSuccess({ 
       res, 
       status: 200, 
       message: t.successes.treesFetched, 
-      data: { trees: user?.ownedTrees ?? [] } 
+      data: { trees } 
     });
   } catch (err) {
     return sendError({
       res,
-      code: 'INTERNAL_SERVER_ERROR',
-      message: t.errors.internal,
       context: 'GET OWNED TREES',
       log: err,
+      message: t.errors.internal,
     });
   }
 };
 
 export const getTreeById = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
+  const userId = req.userId;
   
-  return sendSuccess({ 
-    res, status: 200, 
-    message: t.successes.treeFetched, 
-    data: { tree: req.tree } 
-  });
+  const treeId = req.params.treeId as string;
+  if (!treeId) return badRequest(res, "GET TREE BY ID", "Missing treeId in req.params.", t.errors.noTreeId, "TREE_ID_REQUIRED");
+
+  try {
+    const tree = await prisma.familyTree.findFirst({
+      where: {
+        id: treeId,
+        OR: [
+          { ownerId: userId },
+          {
+            members: {
+              some: {
+                userId: userId,
+              },
+            },
+          },
+        ],
+      },
+      include: fullTreeInclude,
+    });
+
+    if (!tree) {
+      return notFound(res, "GET TREE BY ID", "Tree not found.", t.errors.treeNotFound, "TREE_NOT_FOUND");
+    }
+    
+    return sendSuccess({ 
+      res, 
+      status: 200, 
+      message: t.successes.treeFetched, 
+      data: { tree }
+    });
+  } catch (err) {
+    return sendError({
+      res,
+      code: 'INTERNAL_SERVER_ERROR',
+      message: t.errors.internal,
+      context: 'GET TREE BY ID',
+      log: err,
+    });
+  }
 };
 
 export const deleteTree = async (req: Request<DeleteTreeParams>, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
+  const userId = req.userId;
   const { treeId } = req.params;
 
   try {
-    await prisma.familyTree.delete({ where: { id: treeId } });
+    const result = await prisma.familyTree.deleteMany({ 
+      where: { 
+        id: treeId,
+        ownerId: userId // Already checked by requireTreeOwner middleware but there is no harm
+      } 
+    });
+
+    if (result.count === 0) {
+      return notFound(res, "DELETE TREE", "Tree not found.", t.errors.notFound);
+    }
 
     return sendSuccess({ res, message: t.successes.treeDeleted });
   } catch (err) {

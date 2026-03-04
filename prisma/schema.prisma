@@ -68,8 +68,8 @@ model TreeMembership {
   role      TreeRole
   createdAt DateTime    @default(now())
 
-  user      User        @relation(fields: [userId], references: [id])
-  tree      FamilyTree  @relation(fields: [treeId], references: [id])
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tree      FamilyTree  @relation(fields: [treeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, treeId]) // One role per user per tree
 }
@@ -95,7 +95,7 @@ model Person {
   treeId    String
   photoUrl  String?
 
-  tree      FamilyTree  @relation(fields: [treeId], references: [id])
+  tree      FamilyTree  @relation(fields: [treeId], references: [id], onDelete: Cascade)
   user      User?       @relation(fields: [userId], references: [id])
 
   relationshipsFrom Relationship[] @relation("FromPerson")
@@ -112,8 +112,8 @@ model Relationship {
   meta         Json?
   createdAt    DateTime         @default(now())
 
-  from         Person           @relation("FromPerson", fields: [fromId], references: [id])
-  to           Person           @relation("ToPerson", fields: [toId], references: [id])
+  from         Person           @relation("FromPerson", fields: [fromId], references: [id], onDelete: Cascade)
+  to           Person           @relation("ToPerson", fields: [toId], references: [id], onDelete: Cascade)
 
   @@unique([fromId, toId, type]) // Prevent duplicated relationships
 }
@@ -131,7 +131,7 @@ model Session {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  user         User     @relation(fields: [userId], references: [id])
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId]) // For better performance
 }

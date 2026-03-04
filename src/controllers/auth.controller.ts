@@ -26,9 +26,10 @@ export const registerUser = async (req: Request, res: Response) => {
       return sendError({
         res,
         status: 409,
-        code: 'USER_ALREADY_EXISTS',
         context: 'REGISTER ERROR',
+        log: "User already exists in db.",
         message: t.errors.userExists,
+        code: 'USER_ALREADY_EXISTS',
       });
     }
 
@@ -67,8 +68,8 @@ export const registerUser = async (req: Request, res: Response) => {
     return sendError({
       res,
       context: 'REGISTER ERROR',
-      message: t.errors.internal,
       log: err,
+      message: t.errors.internal,
     });
   }
 };
@@ -86,9 +87,10 @@ export const loginUser = async (req: Request, res: Response) => {
       return sendError({
         res,
         status: 401,
-        code: 'INVALID_CREDENTIALS',
         context: 'LOGIN ERROR',
+        log: "User doesn't exist in db.",
         message: t.errors.invalidCredentials,
+        code: 'INVALID_CREDENTIALS',
       });
     }
     // Compare passwords
@@ -97,9 +99,10 @@ export const loginUser = async (req: Request, res: Response) => {
       return sendError({
         res,
         status: 401,
-        code: 'INVALID_CREDENTIALS',
         context: 'LOGIN ERROR',
+        log: "Password is incorrect.",
         message: t.errors.invalidCredentials,
+        code: 'INVALID_CREDENTIALS',
       });
     }
     // Generate tokens
@@ -123,8 +126,8 @@ export const loginUser = async (req: Request, res: Response) => {
     return sendError({
       res,
       context: 'LOGIN ERROR',
-      message: t.errors.internal,
       log: err,
+      message: t.errors.internal,
     });
   }
 };
@@ -135,7 +138,7 @@ export const refreshToken = async (req: Request, res: Response) => {
   // Get refresh token from cookies
   const token = req.cookies?.refreshToken;
   if (!token) {
-    return unauthorized(res, t.errors.unauthorized);
+    return unauthorized(res, "REFRESH TOKEN", "There is no token.", t.errors.unauthorized);
   }
 
   try {
@@ -146,13 +149,13 @@ export const refreshToken = async (req: Request, res: Response) => {
       where: { refreshToken: token },
     })
     if (!session || session.expiresAt < new Date()) {
-      return unauthorized(res, t.errors.unauthorized);
+      return unauthorized(res, "REFRESH TOKEN", "No matching session, token is invalid.", t.errors.unauthorized);
     }
 
     // Check if user still exists in db for security
     const user = await prisma.user.findUnique({ where: { id: payload.userId } });
     if (!user) {
-      return unauthorized(res, t.errors.unauthorized);
+      return unauthorized(res, "REFRESH TOKEN", "User is not in db.", t.errors.unauthorized);
     }
 
     // Invalidate old session
@@ -173,7 +176,19 @@ export const refreshToken = async (req: Request, res: Response) => {
       data: { accessToken: newAccessToken } 
     });
   } catch (err) {
-    return unauthorized(res, t.errors.unauthorized);
+    if (
+      err instanceof TokenExpiredError ||
+      err instanceof JsonWebTokenError
+    ) {
+      return unauthorized(res, "REFRESH TOKEN", "Token is invalid.", t.errors.unauthorized);
+    }
+
+    return sendError({
+      res,
+      context: 'REFRESH TOKEN',
+      log: err,
+      message: t.errors.internal,
+    });
   }
 };
 
@@ -185,18 +200,12 @@ export const logoutUser = async (req: Request, res: Response) => {
 
   if (token) {
     try {
-      // Attempt to remove session from db (even if token is expired)
+      // Attempt to remove session from db (even if token is invalid or expired)
       await prisma.session.deleteMany({
         where: { refreshToken: token },
       });
     } catch (err) {
-      return sendError({
-        res,
-        code: 'INTERNAL_SERVER_ERROR',
-        context: 'LOGOUT ERROR',
-        message: t.errors.internal,
-        log: err,
-      });
+      // Ignore because we're going to clear the the refresh token cookie anyway
     }
   }
 
@@ -212,24 +221,24 @@ export const logoutUser = async (req: Request, res: Response) => {
 
 export const logoutAllSessions = async (req: Request, res: Response) => {
   const t = getMessages(req.locale); // Localized messages
-
   const token = req.cookies?.refreshToken;
-  if (!token) {
-    return unauthorized(res, t.errors.unauthorized);
-  }
 
   try {
-    // Decode and verify the refresh token
-    const payload = jwt.verify(token, JWT.REFRESH_SECRET) as { userId: string };
+    if(token) {
+      try {
+        // Decode and verify the refresh token
+        const payload = jwt.verify(token, JWT.REFRESH_SECRET) as { userId: string };
+  
+        // Delete all sessions for that user
+        await prisma.session.deleteMany({
+          where: { userId: payload.userId },
+        });
+      } catch (error) {
+        // Ignore because we're going to clear the the refresh token cookie anyway
+      }  
+    }
 
-    // Delete all sessions for that user
-    await prisma.session.deleteMany({
-      where: {
-        userId: payload.userId,
-      },
-    });
-
-    // Clear the refresh token cookie
+    // Clear the refresh token cookie whatever happens
     res.clearCookie('refreshToken', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -238,19 +247,11 @@ export const logoutAllSessions = async (req: Request, res: Response) => {
 
     return sendSuccess({ res, message: t.successes.logout });
   } catch (err) {
-    if (
-      err instanceof TokenExpiredError ||
-      err instanceof JsonWebTokenError
-    ) {
-      return unauthorized(res, t.errors.unauthorized);
-    }
-
     return sendError({
       res,
-      code: 'INTERNAL_SERVER_ERROR',
-      context: 'LOGOUT ALL SESSIONS ERROR',
-      message: t.errors.internal,
+      context: 'LOGOUT ALL SESSIONS',
       log: err,
+      message: t.errors.internal,
     });
   }
 };

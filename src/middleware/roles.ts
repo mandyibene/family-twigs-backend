@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from "@prisma/client";
-import { badRequest, forbidden, sendError } from "../utils/httpResponse";
+import { badRequest, forbidden, notFound, sendError } from "../utils/httpResponse";
 import { getMessages } from "../utils/getMessages";
 import { fullTreeInclude } from "../utils/prismaIncludes";
 import { FamilyTreeWithRelations, TreeMembershipWithTree } from "../types/familyTree.types";
@@ -15,7 +15,7 @@ export const requireTreeOwner = (preload = false) => {
 
     const treeId = req.params.treeId as string;
     if (!treeId)
-      return badRequest(res, t.errors.treeIdRequired, "TREE_ID_REQUIRED");
+      return badRequest(res, "REQUIRE TREE OWNER", "Missing treeId in req.params.", t.errors.treeIdRequired, "TREE_ID_REQUIRED");
 
     try {
       const tree = await prisma.familyTree.findUnique({
@@ -26,7 +26,7 @@ export const requireTreeOwner = (preload = false) => {
       });
 
       if (!tree || tree.ownerId !== userId)
-        return forbidden(res, t.errors.forbidden);
+        return notFound(res, "REQUIRE TREE OWNER", "Didn't find the tree.", t.errors.notFound);
 
       if (preload) req.tree = tree as FamilyTreeWithRelations; // Preload the tree
 
@@ -34,10 +34,9 @@ export const requireTreeOwner = (preload = false) => {
     } catch (err) {
       return sendError({
         res,
-        code: "INTERNAL_SERVER_ERROR",
-        message: t.errors.internal,
-        context: 'REQUIRE TREE OWNER',
+        context: "REQUIRE TREE OWNER",
         log: err,
+        message: t.errors.internal,
       });
     }
   };
@@ -54,7 +53,7 @@ export const requireTreeRole = (
     
     const treeId = req.params.treeId as string;
     if (!treeId)
-      return badRequest(res, t.errors.treeIdRequired, "TREE_ID_REQUIRED");
+      return badRequest(res, "REQUIRE TREE ROLE", "Missing treeId in req.params.", t.errors.treeIdRequired, "TREE_ID_REQUIRED");
 
     try {
       const membership = await prisma.treeMembership.findUnique({
@@ -68,13 +67,13 @@ export const requireTreeRole = (
         }),
       });
 
-      if (!membership) return forbidden(res, t.errors.forbidden);
+      if (!membership) return notFound(res, "REQUIRE TREE ROLE", "User is not a member of the tree.", t.errors.notFound);
 
       if (minRole) {
         const rolePriority = { READER: 1, EDITOR: 2, MANAGER: 3 };
 
         if (rolePriority[membership.role] < rolePriority[minRole])
-          return forbidden(res, t.errors.insufficientRole, "INSUFFICIENT_ROLE");
+          return forbidden(res, "REQUIRE TREE ROLE", "User role is insufficient", t.errors.insufficientRole, "INSUFFICIENT_ROLE");
       }
 
       req.treeMembership = membership;
@@ -88,10 +87,9 @@ export const requireTreeRole = (
     } catch (err) {
       return sendError({
         res,
-        code: "INTERNAL_SERVER_ERROR",
-        message: t.errors.internal,
-        context: 'REQUIRE TREE ROLE',
+        context: "REQUIRE TREE ROLE",
         log: err,
+        message: t.errors.internal,
       });
     }
   };

@@ -23,19 +23,19 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
   
   const authHeader = req.headers.authorization; // Extract Bearer <token> from headers
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return unauthorized(res, t.errors.unauthorized);
+    return unauthorized(res, "AUTHENTICATE", "There is no bearer token.", t.errors.unauthorized);
   }
 
   const token = authHeader.split(' ')[1];
-  if (!token) return unauthorized(res, t.errors.unauthorized);
+  if (!token) return unauthorized(res, "AUTHENTICATE", "There is no token.", t.errors.unauthorized);
 
   try {
     const payload = verifyJwt<{ userId: string }>(token, JWT.ACCESS_SECRET); // Verify JWT
-    if (!payload) return unauthorized(res, t.errors.unauthorized);
+    if (!payload) return unauthorized(res, "AUTHENTICATE", "No payload, token is invalid.", t.errors.unauthorized);
 
     req.userId = payload.userId; // To use in protected controllers
     next();
   } catch (err) {
-    return unauthorized(res, t.errors.unauthorized);
+    return unauthorized(res, "AUTHENTICATE", "Token is invalid.", t.errors.unauthorized);
   }
 };
