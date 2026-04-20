@@ -6,6 +6,7 @@ import { detectLocale } from './middleware/detectLocale';
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import familyTreeRoutes from './routes/familyTree.routes';
+import peopleRoutes from './routes/people.routes';
 import { ENV } from './config';
 import helmet from 'helmet';
 import { cleanSessions } from '../tasks/cleanSessions'
@@ -49,6 +50,7 @@ app.get('/', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/trees', familyTreeRoutes);
+app.use('/api/trees', peopleRoutes);
 
 if (ENV.NODE_ENV !== 'test') {
   startServer();

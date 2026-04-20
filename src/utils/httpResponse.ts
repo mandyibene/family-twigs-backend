@@ -21,7 +21,9 @@ type ErrorCode =
   | 'USER_NOT_FOUND'
   | 'PSEUDO_TAKEN'
   | 'TREE_NOT_FOUND'
-  | 'TREE_NAME_TAKEN';
+  | 'TREE_NAME_TAKEN'
+  | 'INVALID_USER_REFERENCE'
+  | 'USER_ALREADY_LINKED';
 
 interface ErrorParams {
   res: Response;

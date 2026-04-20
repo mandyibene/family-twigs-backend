@@ -23,6 +23,9 @@ export type ZodErrors = {
     nonempty: string,
     max: string,
   };
+  gender: {
+    max: string,
+  };
   pseudo: {
     min: string;
     max: string;
@@ -59,7 +62,10 @@ export const zodErrors: Record<'en' | 'fr', ZodErrors> = {
     },
     fullName: {
       nonempty: "You must indicate a fullname",
-      max: "Fullname must be at most 50 characters"
+      max: "Fullname must be at most 100 characters"
+    },
+    gender: {
+      max: "Gender must be at most 20 characters"
     },
     pseudo: {
       min: "Pseudo should be at least 3 characters long",
@@ -96,6 +102,9 @@ export const zodErrors: Record<'en' | 'fr', ZodErrors> = {
     fullName: {
       nonempty: "Vous devez indiquer un nom",
       max: "Le nom ne doit pas dépasser 50 caractères"
+    },
+    gender: {
+      max: "Le genre ne doit pas dépasser 20 caractères"
     },
     pseudo: {
       min: "Le pseudo doit contenir au moins 3 caractères",
