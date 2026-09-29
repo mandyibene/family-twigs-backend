@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --runInBand",
+    "test:coverage": "jest --coverage --runInBand",
     "dev": "nodemon --watch src --exec ts-node src/index.ts"
   },
   "keywords": [],

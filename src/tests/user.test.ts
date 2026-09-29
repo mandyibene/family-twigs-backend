@@ -1,5 +1,6 @@
 import { 
   createTestUser, 
+  deleteUserSessionById, 
   disconnectDatabase, 
   getMe, 
   getSessions, 
@@ -156,5 +157,25 @@ describe('GET /api/users/me/sessions', () => {
     
     expect(res.status).toBe(200);
     expect(res.body.data.sessions).toBeDefined();
+  });
+});
+
+describe('DELETE /api/users/me/sessions/:sessionId', () => {
+  let accessToken: string;
+  let cookies: string;
+
+  beforeAll(async () => {
+    await resetDatabase();
+    const user = createTestUser('delete-session');
+    const registerRes = await registerAndGetToken(user);
+    accessToken = registerRes.accessToken;
+    cookies = registerRes.cookies;
+  });
+
+  it('should delete a given session', async () => {
+    const res1 = await getSessions(cookies, accessToken);
+    const sessionId = res1.body.data.sessions[0].id;
+    const res2 = await deleteUserSessionById(accessToken, sessionId);
+    expect(res2.status).toBe(200);
   });
 });

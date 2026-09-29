@@ -82,11 +82,30 @@ export const getRefreshToken = (res: request.Response) => {
   return refreshCookie;
 };
 
+export const refreshToken = async (refreshCookie: string) => {
+  const res =  await request(app)
+    .post('/api/auth/refresh-token')
+    .set('Accept-Language', 'en')
+    .set('Cookie', refreshCookie); // Supertest doesn't keep cookies between 2 requests so we reinject manually 
+
+  const newAccessToken = res.body.data.accessToken;
+  const newRefreshCookie = getRefreshToken(res);
+
+  return { newAccessToken, newRefreshCookie };
+};
+
 export const loginUser = async (email: string, password: string) => {
   return await request(app)
     .post('/api/auth/login')
     .set('Accept-Language', 'en')
     .send({ email, password });
+};
+
+export const logoutUser = async (refreshCookie: string) => {
+  return await request(app)
+    .post('/api/auth/logout')
+    .set('Accept-Language', 'en')
+    .set('Cookie', refreshCookie);
 };
 
 // ============== USER ==============
@@ -135,12 +154,18 @@ export const updatePassword = async (
 export const getSessions = async (cookies: string, accessToken?: string) => {
   if (accessToken) {
     return await request(app)
-    .get('/api/users/me/sessions')
-    .set('Authorization', `Bearer ${accessToken}`)
-    .set('Cookie', cookies);
+      .get('/api/users/me/sessions')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .set('Cookie', cookies);
   }
 
   return await request(app).get('/api/users/me/sessions')
+}
+
+export const deleteUserSessionById = async (accessToken: string, sessionId: string) => {
+    return await request(app)
+      .delete(`/api/users/me/sessions/${sessionId}`)
+      .set('Authorization', `Bearer ${accessToken}`);
 }
 
 // ============== FAMILY TREE ==============
@@ -182,7 +207,7 @@ export const getOwnedTrees = async (
     .set('Authorization', `Bearer ${accessToken}`)
 };
 
-export const getTreeById = async (
+export const fetchTreeById = async (
   accessToken: string,
   treeId: string,
 ) => {

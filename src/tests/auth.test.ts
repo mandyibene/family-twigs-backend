@@ -5,6 +5,8 @@ import {
   loginUser,
   getRefreshToken,
   createTestUser,
+  refreshToken,
+  logoutUser,
 } from '../utils/testHelpers';
 
 beforeAll(() => {
@@ -116,4 +118,47 @@ describe('[RATE LIMITING] POST /api/auth/login', () => {
     expect(res.statusCode).toBe(429);
     expect(res.body.error.code).toBe('TOO_MANY_LOGIN_ATTEMPTS');
   });
+});
+
+describe('POST /api/auth/refresh-token', () => {
+  const user = createTestUser('refresh-token');
+
+   beforeAll(async () => {
+    await resetDatabase();
+    await registerUser(user);
+  });
+
+  it('should create new access and refresh tokens', async () => {
+    const res1 = await loginUser(user.email, user.password);
+    const accessToken = res1.body.data.accessToken;
+    const refreshCookie = getRefreshToken(res1);
+
+    const res2 = await refreshToken(refreshCookie);
+    const newAccessToken = res2.newAccessToken;
+    const newRefreshCookie = res2.newRefreshCookie;
+    expect(newAccessToken).toBeDefined();
+    expect(newRefreshCookie).toBeDefined();
+    expect(newAccessToken).not.toBe(accessToken);
+    expect(newRefreshCookie).not.toBe(refreshCookie);
+  });
+
+});
+
+describe('POST /api/auth/logout', () => {
+  const user = createTestUser('logout');
+
+   beforeAll(async () => {
+    await resetDatabase();
+    await registerUser(user);
+  });
+
+  it('should logout successfully', async () => {
+    const res1 = await loginUser(user.email, user.password);
+    const refreshCookie = getRefreshToken(res1);
+
+    const res2 = await logoutUser(refreshCookie);
+    const newRefreshCookie = getRefreshToken(res2);
+    expect(newRefreshCookie).toMatch(/Max-Age=0|Expires=Thu, 01 Jan 1970/)
+  });
+
 });

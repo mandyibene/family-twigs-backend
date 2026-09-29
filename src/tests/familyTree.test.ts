@@ -3,7 +3,7 @@ import {
   createTestUser, 
   deleteTree, 
   disconnectDatabase, 
-  getTreeById, 
+  fetchTreeById, 
   getUserTrees, 
   registerAndGetToken, 
   resetDatabase,
@@ -72,12 +72,12 @@ describe('Test CRUD operations on family trees', () => {
   });
 
   it('should fetch a tree the user is a member of', async () => {
-    const res = await getTreeById(accessToken, treeId);
+    const res = await fetchTreeById(accessToken, treeId);
     expect(res.statusCode).toBe(200);
   });
 
   it('should not fetch a tree when user is not member or if the tree doesn\'t exist', async () => {
-    const res = await getTreeById(accessToken, 'madeUpId');
+    const res = await fetchTreeById(accessToken, 'madeUpId');
     expect(res.statusCode).toBe(404);
   });
 

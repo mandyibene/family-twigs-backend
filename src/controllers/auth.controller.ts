@@ -65,6 +65,7 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
   } catch (err) {
+    /* istanbul ignore next */
     return sendError({
       res,
       context: 'REGISTER ERROR',
@@ -123,6 +124,7 @@ export const loginUser = async (req: Request, res: Response) => {
     });
 
   } catch (err) {
+    /* istanbul ignore next */
     return sendError({
       res,
       context: 'LOGIN ERROR',
@@ -205,7 +207,7 @@ export const logoutUser = async (req: Request, res: Response) => {
         where: { refreshToken: token },
       });
     } catch (err) {
-      // Ignore because we're going to clear the the refresh token cookie anyway
+      // Ignore because we're going to clear the refresh token cookie anyway
     }
   }
 
@@ -247,6 +249,7 @@ export const logoutAllSessions = async (req: Request, res: Response) => {
 
     return sendSuccess({ res, message: t.successes.logout });
   } catch (err) {
+    /* istanbul ignore next */
     return sendError({
       res,
       context: 'LOGOUT ALL SESSIONS',

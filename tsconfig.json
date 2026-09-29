@@ -8,12 +8,14 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "target": "ES2020",         // Use modern JS features
-    "module": "CommonJS",       // Required for Node.js (uses require/module.exports)
-    "moduleResolution": "node", // Let TS resolve modules like Node.js does
+    "target": "ES2020",           // Use modern JS features
+    "module": "Node16",           // Required for Node.js (uses require/module.exports)
+    "moduleResolution": "node16", // Let TS resolve modules like Node.js does
+    "isolatedModules": true,      // Warn if a single-file transpilation process can't interpret the code
     
     // Type Declarations
-    "typeRoots" : ["./src/types", "./node_modules/@types"],
+    "types": ["jest", "node"],
+    // "typeRoots" : ["./src/types", "./node_modules/@types"],
 
     // Other Outputs
     "sourceMap": true,          // Generate source maps for JS files (to map back to TS files)

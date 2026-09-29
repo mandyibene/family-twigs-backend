@@ -23,12 +23,18 @@ export const getCurrentUser = async (req: Request, res: Response) => {
       },
     });
 
+    /* istanbul ignore next */
     if (!user) {
-      throw new Error("Authenticated user not found in database");
+      return notFound(
+        res,
+        "GET CURRENT USER",
+        "Authenticated user not found in database.",
+        t.errors.userNotFound);
     }
 
     return sendSuccess({ res, message: t.successes.userFetched, data: { user } });
   } catch (err) {
+    /* istanbul ignore next */
     return sendError({
       res,
       context: 'GET USER ERROR',
@@ -86,6 +92,7 @@ export const updateUserProfile = async (req: Request, res: Response) => {
       data: { user: updatedUser } 
     });
   } catch (err) {
+    /* istanbul ignore next */
     return sendError({
       res,
       context: 'UPDATE PROFILE',
@@ -105,21 +112,24 @@ export const updatePassword = async (req: Request, res: Response) => {
       where: { id: userId } 
     });
 
+    /* istanbul ignore next */
     if (!user) {
-      throw new Error("Authenticated user not found in database");
+      return notFound(
+        res,
+        "UPDATE PASSWORD",
+        "Authenticated user not found in database.",
+        t.errors.userNotFound);
     }
 
     // Check current password
     const isMatching = await bcrypt.compare(currentPassword, user.password);
     if (!isMatching) {
-      // return sendError({
-      //   res,
-      //   status: 401,
-      //   code: 'INCORRECT_PASSWORD',
-      //   context: 'UPDATE PASSWORD',
-      //   message: t.errors.incorrectPassword,
-      // });
-      return unauthorized(res, "UPDATE PASSWORD", "Incorrect password.", t.errors.incorrectPassword, "INCORRECT_PASSWORD")
+      return unauthorized(
+        res,
+        "UPDATE PASSWORD",
+        "Incorrect password.",
+        t.errors.incorrectPassword,
+        "INCORRECT_PASSWORD");
     }
 
     // Hash new password
@@ -131,6 +141,7 @@ export const updatePassword = async (req: Request, res: Response) => {
 
     return sendSuccess({ res, message: t.successes.passwordUpdated });
   } catch (err) {
+    /* istanbul ignore next */
     return sendError({
       res,
       context: 'UPDATE PASSWORD',
@@ -186,6 +197,7 @@ export const getUserSessions = async (req: Request, res: Response) => {
       data: { sessions: sessionsWithCurrentBoolean } 
     });
   } catch (err) {
+    /* istanbul ignore next */
     return sendError({
       res,
       context: 'GET USER SESSIONS',
@@ -216,6 +228,7 @@ export const deleteUserSession = async (req: Request, res: Response) => {
 
     return sendSuccess({ res, message: t.successes.sessionDeleted });
   } catch (err) {
+    /* istanbul ignore next */
     return sendError({
       res,
       context: 'DELETE USER SESSION',

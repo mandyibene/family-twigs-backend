@@ -21,7 +21,16 @@ if (!REFRESH_TOKEN_SECRET) {
  * @return An access token
  */
 export const generateAccessToken = (userId: string): string => {
-  return jwt.sign({ userId }, JWT.ACCESS_SECRET, { expiresIn: JWT.ACCESS_EXPIRES_IN });
+  return jwt.sign(
+    { 
+      userId, 
+      jti: uuidv4(), // Add random unique ID to prevent token duplication
+    },
+    JWT.ACCESS_SECRET, 
+    { 
+      expiresIn: JWT.ACCESS_EXPIRES_IN 
+    }
+  );
 };
 
 /**

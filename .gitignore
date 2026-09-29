@@ -12,3 +12,6 @@
 # Prisma generated files and local DBs
 /prisma/dev.db
 /prisma/*.db
+
+# Coverage
+/coverage
