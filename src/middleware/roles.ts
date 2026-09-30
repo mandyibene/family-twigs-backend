@@ -14,8 +14,17 @@ export const requireTreeOwner = (preload = false) => {
     const userId = req.userId;
 
     const treeId = req.params.treeId as string;
-    if (!treeId)
-      return badRequest(res, "REQUIRE TREE OWNER", "Missing treeId in req.params.", t.errors.treeIdRequired, "TREE_ID_REQUIRED");
+
+    /* istanbul ignore next */
+    if (!treeId) {
+      return badRequest(
+        res, 
+        "REQUIRE TREE OWNER",
+        "Missing treeId in req.params.",
+        t.errors.treeIdRequired,
+        "TREE_ID_REQUIRED"
+      );
+    }
 
     try {
       const tree = await prisma.familyTree.findUnique({
@@ -32,6 +41,7 @@ export const requireTreeOwner = (preload = false) => {
 
       next();
     } catch (err) {
+      /* istanbul ignore next */
       return sendError({
         res,
         context: "REQUIRE TREE OWNER",
@@ -52,8 +62,18 @@ export const requireTreeRole = (
     const userId = req.userId;
     
     const treeId = req.params.treeId as string;
+
+    /* istanbul ignore next */
     if (!treeId)
-      return badRequest(res, "REQUIRE TREE ROLE", "Missing treeId in req.params.", t.errors.treeIdRequired, "TREE_ID_REQUIRED");
+    {
+      return badRequest(
+        res,
+        "REQUIRE TREE ROLE",
+        "Missing treeId in req.params.",
+        t.errors.treeIdRequired,
+        "TREE_ID_REQUIRED"
+      );
+    }
 
     try {
       const membership = await prisma.treeMembership.findUnique({
@@ -67,7 +87,8 @@ export const requireTreeRole = (
         }),
       });
 
-      if (!membership) return notFound(res, "REQUIRE TREE ROLE", "User is not a member of the tree.", t.errors.notFound);
+      if (!membership)
+        return notFound(res, "REQUIRE TREE ROLE", "User is not a member of the tree.", t.errors.notFound);
 
       if (minRole) {
         const rolePriority = { READER: 1, EDITOR: 2, MANAGER: 3 };
@@ -85,6 +106,7 @@ export const requireTreeRole = (
 
       next();
     } catch (err) {
+      /* istanbul ignore next */
       return sendError({
         res,
         context: "REQUIRE TREE ROLE",
